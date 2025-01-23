@@ -31,4 +31,16 @@ public class Schedule {
     
     @OneToOne(mappedBy = "schedule", fetch = FetchType.LAZY)
     private Course course;
+    
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
+    
+    public Room getRoom() {
+        return room;
+    }
+    
+    public void setRoom(Room room) {
+        this.room = room;
+    }
 } 
