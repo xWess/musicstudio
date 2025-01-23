@@ -7,7 +7,7 @@ import lombok.Builder;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -28,7 +28,7 @@ public class Room {
     private Integer capacity;
     
     @OneToMany(mappedBy = "room")
-    private List<Schedule> schedules;
+    private Set<Schedule> schedules;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id")
