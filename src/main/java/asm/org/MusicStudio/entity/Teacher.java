@@ -1,13 +1,13 @@
 package asm.org.MusicStudio.entity;
 
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
-import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -15,12 +15,8 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "teachers")
 public class Teacher extends User {
-    @Column(name = "teacher_id", unique = true)
     private Integer teacherId;
-    
-    @OneToMany(mappedBy = "teacher")
-    private List<Course> assignedCourses;
+    @Builder.Default
+    private List<Course> assignedCourses = new ArrayList<>();
 } 

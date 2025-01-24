@@ -1,11 +1,17 @@
 package asm.org.MusicStudio;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import asm.org.MusicStudio.db.DatabaseConnection;
 
-@SpringBootApplication
 public class MusicStudioApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MusicStudioApplication.class, args);
+        System.out.println("Music Studio Application Started");
+        
+        // Test database connection
+        try {
+            DatabaseConnection.getInstance().getConnection();
+            System.out.println("Successfully connected to the database");
+        } catch (Exception e) {
+            System.err.println("Failed to connect to the database: " + e.getMessage());
+        }
     }
 }

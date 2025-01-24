@@ -1,33 +1,48 @@
 package asm.org.MusicStudio.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "courses")
 public class Course {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "course_id")
     private Integer courseId;
-    
-    @Column(nullable = false)
     private String name;
-    
-    @OneToOne
-    @JoinColumn(name = "schedule_id")
     private Schedule schedule;
-    
-    @ManyToOne
-    @JoinColumn(name = "teacher_id")
     private Teacher teacher;
-    
-    @OneToMany(mappedBy = "course")
-    private List<Enrollment> enrollments;
+    private List<Enrollment> enrollments = new ArrayList<>();
+
+    // Default constructor
+    public Course() {}
+
+    // Parameterized constructor
+    public Course(Integer courseId, String name, Schedule schedule, Teacher teacher) {
+        this.courseId = courseId;
+        this.name = name;
+        this.schedule = schedule;
+        this.teacher = teacher;
+    }
+
+    // Getters and setters
+    public Integer getCourseId() { return courseId; }
+    public void setCourseId(Integer courseId) { this.courseId = courseId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public Schedule getSchedule() { return schedule; }
+    public void setSchedule(Schedule schedule) { this.schedule = schedule; }
+
+    public Teacher getTeacher() { return teacher; }
+    public void setTeacher(Teacher teacher) { this.teacher = teacher; }
+
+    public List<Enrollment> getEnrollments() { return enrollments; }
+    public void setEnrollments(List<Enrollment> enrollments) { this.enrollments = enrollments; }
+
+    // Helper methods
+    public void addEnrollment(Enrollment enrollment) {
+        enrollments.add(enrollment);
+    }
+
+    public void removeEnrollment(Enrollment enrollment) {
+        enrollments.remove(enrollment);
+    }
 } 
