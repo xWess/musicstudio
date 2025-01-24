@@ -1,22 +1,32 @@
 package asm.org.MusicStudio.db;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;
     private Connection connection;
     
-    private static final String URL = "jdbc:postgresql://localhost:5432/musicstudio";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "admin";
-    
     private DatabaseConnection() {
         try {
+            Properties props = new Properties();
+            props.load(getClass().getClassLoader().getResourceAsStream("database.properties"));
+            
+            // Print connection details (remove in production)
+            System.out.println("Attempting to connect with:");
+            System.out.println("URL: " + props.getProperty("db.url"));
+            System.out.println("User: " + props.getProperty("db.user"));
+            
             Class.forName("org.postgresql.Driver");
-            this.connection = DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (ClassNotFoundException | SQLException e) {
+            this.connection = DriverManager.getConnection(
+                props.getProperty("db.url"),
+                props.getProperty("db.user"),
+                props.getProperty("db.password")
+            );
+        } catch (ClassNotFoundException | SQLException | IOException e) {
             throw new RuntimeException("Error connecting to the database", e);
         }
     }
@@ -32,7 +42,21 @@ public class DatabaseConnection {
         return instance;
     }
     
-    public Connection getConnection() {
+    public Connection getConnection() throws SQLException {
+        if (connection == null || connection.isClosed()) {
+            try {
+                Properties props = new Properties();
+                props.load(getClass().getClassLoader().getResourceAsStream("database.properties"));
+                
+                this.connection = DriverManager.getConnection(
+                    props.getProperty("db.url"),
+                    props.getProperty("db.user"),
+                    props.getProperty("db.password")
+                );
+            } catch (IOException e) {
+                throw new SQLException("Could not load database properties", e);
+            }
+        }
         return connection;
     }
     
