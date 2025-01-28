@@ -1,28 +1,38 @@
 package asm.org.MusicStudio.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Builder;
-
-import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "artists")
 public class Artist {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "artist_id")
     private Integer artistId;
-    
-    @Column(name = "name", nullable = false)
     private String name;
-    
-    @OneToMany(mappedBy = "bookedBy")
-    private List<Room> rooms;
+    private List<Room> rooms = new ArrayList<>();
+
+    // Default constructor
+    public Artist() {}
+
+    // Parameterized constructor
+    public Artist(Integer artistId, String name) {
+        this.artistId = artistId;
+        this.name = name;
+    }
+
+    // Getters and setters
+    public Integer getArtistId() { return artistId; }
+    public void setArtistId(Integer artistId) { this.artistId = artistId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public List<Room> getRooms() { return rooms; }
+    public void setRooms(List<Room> rooms) { this.rooms = rooms; }
+
+    // Helper methods
+    public void addRoom(Room room) {
+        rooms.add(room);
+    }
+
+    public void removeRoom(Room room) {
+        rooms.remove(room);
+    }
 } 
