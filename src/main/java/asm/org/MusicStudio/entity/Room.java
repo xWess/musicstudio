@@ -19,10 +19,17 @@ public class Room {
     private Integer capacity;
     @Builder.Default
     private Set<Schedule> schedules = new HashSet<>();
-    private Artist bookedBy;
-    
+
     public boolean isAvailable(LocalDate date, String time) {
         // Implementation for checking room availability
         return true; // placeholder
+    }
+
+    public void addSchedule(Schedule schedule) {
+        schedules.add(schedule);
+    }
+
+    public void removeSchedule(Schedule schedule) {
+        schedules.remove(schedule);
     }
 }

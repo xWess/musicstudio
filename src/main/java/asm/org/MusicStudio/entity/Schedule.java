@@ -18,4 +18,5 @@ public class Schedule {
     private LocalTime endTime;
     private Course course;
     private Room room;
-} 
+    private Artist bookedBy; // This field can be null for course schedules
+}

@@ -16,7 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Teacher extends User {
-    private Integer teacherId;
     @Builder.Default
     private List<Course> assignedCourses = new ArrayList<>();
+
+    public Teacher(Integer id, String name, String email, String role) {
+        super(id, name, email, Role.valueOf(role.toUpperCase()));
+        this.assignedCourses = new ArrayList<>();
+    }
 } 

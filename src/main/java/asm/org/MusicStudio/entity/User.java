@@ -9,9 +9,17 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class User {
+public abstract class User {
     private Integer id;
     private String name;
     private String email;
-    private String role;
+    private Role role;
+
+    public void setRole(String roleStr) {
+        try {
+            this.role = Role.valueOf(roleStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Role must be either 'student', 'teacher', or 'artist'");
+        }
+    }
 } 

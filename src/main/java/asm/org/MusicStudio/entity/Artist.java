@@ -1,38 +1,33 @@
 package asm.org.MusicStudio.entity;
 
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Artist {
-    private Integer artistId;
-    private String name;
-    private List<Room> rooms = new ArrayList<>();
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
+@NoArgsConstructor
+public class Artist extends User {
+    @Builder.Default
+    private List<Room> bookedRooms = new ArrayList<>();
 
-    // Default constructor
-    public Artist() {}
-
-    // Parameterized constructor
-    public Artist(Integer artistId, String name) {
-        this.artistId = artistId;
-        this.name = name;
+    public Artist(Integer id, String name, String email, String role) {
+        super(id, name, email, Role.valueOf(role.toUpperCase()));
+        this.bookedRooms = new ArrayList<>();
     }
-
-    // Getters and setters
-    public Integer getArtistId() { return artistId; }
-    public void setArtistId(Integer artistId) { this.artistId = artistId; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public List<Room> getRooms() { return rooms; }
-    public void setRooms(List<Room> rooms) { this.rooms = rooms; }
 
     // Helper methods
-    public void addRoom(Room room) {
-        rooms.add(room);
+    public void bookRoom(Room room) {
+        if (room != null && !bookedRooms.contains(room)) {
+            bookedRooms.add(room);
+        }
     }
 
-    public void removeRoom(Room room) {
-        rooms.remove(room);
+    public void cancelRoomBooking(Room room) {
+        bookedRooms.remove(room);
     }
-} 
+}
