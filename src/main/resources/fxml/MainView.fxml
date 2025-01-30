@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="asm.org.MusicStudio.controllers.MainController">
+            
+    <top>
+        <MenuBar>
+            <Menu text="File">
+                <MenuItem text="Exit" onAction="#handleExit"/>
+            </Menu>
+            <Menu text="Help">
+                <MenuItem text="About" onAction="#handleAbout"/>
+            </Menu>
+        </MenuBar>
+    </top>
+    
+    <left>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+            </padding>
+            <Button text="Users" onAction="#showUsers" maxWidth="Infinity"/>
+            <Button text="Schedule" onAction="#showSchedule" maxWidth="Infinity"/>
+            <Button text="Settings" onAction="#showSettings" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+    
+    <center>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+            </padding>
+            
+            <!-- CRUD Buttons -->
+            <HBox spacing="10.0">
+                <Button text="Add User" onAction="#showAddUserDialog"/>
+                <Button text="Edit User" onAction="#showEditUserDialog"/>
+                <Button text="Delete User" onAction="#deleteSelectedUser"/>
+            </HBox>
+            
+            <!-- User Table -->
+            <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idColumn" text="ID"/>
+                    <TableColumn fx:id="nameColumn" text="Name"/>
+                    <TableColumn fx:id="emailColumn" text="Email"/>
+                    <TableColumn fx:id="roleColumn" text="Role"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+    
+    <bottom>
+        <HBox spacing="10">
+            <padding>
+                <Insets top="5.0" right="10.0" bottom="5.0" left="10.0"/>
+            </padding>
+            <Label fx:id="statusLabel" text="Ready"/>
+        </HBox>
+    </bottom>
+    
+</BorderPane> 
