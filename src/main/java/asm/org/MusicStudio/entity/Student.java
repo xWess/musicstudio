@@ -15,14 +15,16 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@AllArgsConstructor
 @SuperBuilder
 public class Student extends User {
-    private Integer studentId;
-    private String name;
-    private String email;
     @Builder.Default
     private Set<Course> courses = new HashSet<>();
     @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
+
+    public Student(Integer id, String name, String email, String role) {
+        super(id, name, email, Role.valueOf(role.toUpperCase()));
+        this.courses = new HashSet<>();
+        this.enrollments = new ArrayList<>();
+    }
 } 
