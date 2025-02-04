@@ -16,7 +16,6 @@ public class ArtistDAO {
 
             pstmt.setString(1, artist.getName());
             pstmt.setString(2, artist.getEmail());
-            pstmt.setString(3, artist.getRole().toString());
             pstmt.setInt(4, artist.getId());
 
             pstmt.executeUpdate();
@@ -42,8 +41,7 @@ public class ArtistDAO {
                     return new Artist(
                             rs.getInt("id"),
                             rs.getString("name"),
-                            rs.getString("email"),
-                            rs.getString("role")
+                            rs.getString("email")
                     );
                 }
             }
@@ -59,7 +57,6 @@ public class ArtistDAO {
 
             pstmt.setString(1, artist.getName());
             pstmt.setString(2, artist.getEmail());
-            pstmt.setString(3, artist.getRole().toString());
             pstmt.setInt(4, artist.getId());
 
             pstmt.executeUpdate();
@@ -89,8 +86,7 @@ public class ArtistDAO {
                 artists.add(new Artist(
                         rs.getInt("id"),
                         rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getString("role")
+                        rs.getString("email")
                 ));
             }
         }

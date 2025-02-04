@@ -11,10 +11,15 @@ public class Student extends User {
 
     public Student() {
         super();
+        setRole(Role.STUDENT);
     }
 
-    public Student(Integer id, String name, String email, String role) {
-        super(id, name, email, Role.valueOf(role.toUpperCase()));
+    public Student(Integer id, String name, String email) {
+        super();
+        setId(id);
+        setName(name);
+        setEmail(email);
+        setRole(Role.STUDENT);
         this.courses = new HashSet<>();
         this.enrollments = new ArrayList<>();
     }

@@ -3,64 +3,224 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="asm.org.MusicStudio.controllers.MainController">
+            fx:controller="asm.org.MusicStudio.controllers.MainController"
+            minWidth="1024"
+            minHeight="768"
+            maxWidth="Infinity"
+            maxHeight="Infinity"
+            stylesheets="@../styles/main.css">
             
+    <padding>
+        <Insets top="0" right="24" bottom="0" left="0"/>
+    </padding>
+    
     <top>
-        <MenuBar>
-            <Menu text="File">
-                <MenuItem text="Exit" onAction="#handleExit"/>
-            </Menu>
-            <Menu text="Help">
-                <MenuItem text="About" onAction="#handleAbout"/>
-            </Menu>
-        </MenuBar>
+        <VBox spacing="0">
+            <MenuBar styleClass="menu-bar">
+                <Menu text="File">
+                    <MenuItem text="Exit" onAction="#handleExit"/>
+                </Menu>
+                <Menu text="View">
+                    <MenuItem text="Toggle Full Screen" onAction="#toggleFullScreen" accelerator="F11"/>
+                </Menu>
+                <Menu text="Help">
+                    <MenuItem text="About" onAction="#handleAbout"/>
+                </Menu>
+            </MenuBar>
+            <HBox styleClass="header-bar" alignment="CENTER_LEFT">
+                <Text styleClass="header-title" text="Music Studio Management"/>
+            </HBox>
+        </VBox>
     </top>
     
     <left>
-        <VBox spacing="10">
-            <padding>
-                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-            </padding>
-            <Button text="Users" onAction="#showUsers" maxWidth="Infinity"/>
-            <Button text="Schedule" onAction="#showSchedule" maxWidth="Infinity"/>
-            <Button text="Settings" onAction="#showSettings" maxWidth="Infinity"/>
+        <VBox styleClass="sidebar">
+            <VBox styleClass="sidebar-header">
+                <padding>
+                    <Insets top="20" right="15" bottom="20" left="15"/>
+                </padding>
+                <Text styleClass="sidebar-title" text="Navigation"/>
+            </VBox>
+            
+            <VBox styleClass="nav-buttons">
+                <Button fx:id="usersButton" text="Users" onAction="#showUsers" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-users"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="paymentsButton" text="Payments" onAction="#showPayments" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-dollar-sign"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="scheduleButton" text="Schedule" onAction="#showSchedule" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-calendar"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="enrollmentsButton" text="Enrollments" onAction="#showEnrollments" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-graduation-cap"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="roomsButton" text="Rooms" onAction="#showRooms" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-door-open"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="profileButton" text="Profile" onAction="#showProfile" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-user"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="settingsButton" text="Settings" onAction="#showSettings" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-cog"/>
+                    </graphic>
+                </Button>
+            </VBox>
         </VBox>
     </left>
     
     <center>
-        <VBox spacing="10.0">
-            <padding>
-                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-            </padding>
-            
-            <!-- CRUD Buttons -->
-            <HBox spacing="10.0">
-                <Button text="Add User" onAction="#showAddUserDialog"/>
-                <Button text="Edit User" onAction="#showEditUserDialog"/>
-                <Button text="Delete User" onAction="#deleteSelectedUser"/>
-            </HBox>
-            
-            <!-- User Table -->
-            <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="idColumn" text="ID"/>
-                    <TableColumn fx:id="nameColumn" text="Name"/>
-                    <TableColumn fx:id="emailColumn" text="Email"/>
-                    <TableColumn fx:id="roleColumn" text="Role"/>
-                </columns>
-            </TableView>
-        </VBox>
+        <StackPane fx:id="contentArea" styleClass="content-area">
+            <!-- Users Content -->
+            <VBox fx:id="usersContent" styleClass="content-container" visible="false">
+                <fx:include fx:id="usersView" source="UserView.fxml"/>
+            </VBox>
+
+            <!-- Schedule Content -->
+            <VBox fx:id="scheduleContent" styleClass="content-container" visible="true">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="Class Schedule"/>
+                </HBox>
+                
+                <HBox styleClass="action-bar">
+                    <DatePicker fx:id="scheduleDatePicker"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <ComboBox fx:id="scheduleViewType" promptText="View Type" styleClass="filter-combo"/>
+                </HBox>
+                
+                <TableView fx:id="scheduleTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                    <columns>
+                        <TableColumn fx:id="timeColumn" text="Time" prefWidth="120"/>
+                        <TableColumn fx:id="courseColumn" text="Course" prefWidth="200"/>
+                        <TableColumn fx:id="teacherColumn" text="Teacher" prefWidth="200"/>
+                        <TableColumn fx:id="roomColumn" text="Room" prefWidth="150"/>
+                        <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Enrollments Content -->
+            <VBox fx:id="enrollmentsContent" styleClass="content-container" visible="false">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="My Enrollments"/>
+                </HBox>
+                
+                <HBox styleClass="action-bar">
+                    <Button text="Enroll in Course" onAction="#showEnrollmentDialog" 
+                            styleClass="action-button,primary-button">
+                        <graphic>
+                            <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
+                        </graphic>
+                    </Button>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <ComboBox fx:id="semesterFilter" promptText="Semester" styleClass="filter-combo"/>
+                </HBox>
+                
+                <TableView fx:id="enrollmentTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                    <columns>
+                        <TableColumn fx:id="courseNameColumn" text="Course" prefWidth="200"/>
+                        <TableColumn fx:id="instructorColumn" text="Instructor" prefWidth="200"/>
+                        <TableColumn fx:id="scheduleColumn" text="Schedule" prefWidth="200"/>
+                        <TableColumn fx:id="enrollmentStatusColumn" text="Status" prefWidth="150"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Rooms Content -->
+            <VBox fx:id="roomsContent" styleClass="content-container" visible="false">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="Practice Rooms"/>
+                </HBox>
+                
+                <HBox styleClass="action-bar">
+                    <Button text="Book Room" onAction="#showRoomBookingDialog" 
+                            styleClass="action-button,primary-button">
+                        <graphic>
+                            <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
+                        </graphic>
+                    </Button>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <DatePicker fx:id="roomDatePicker"/>
+                </HBox>
+                
+                <TableView fx:id="roomsTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                    <columns>
+                        <TableColumn fx:id="roomNumberColumn" text="Room" prefWidth="100"/>
+                        <TableColumn fx:id="roomTypeColumn" text="Type" prefWidth="150"/>
+                        <TableColumn fx:id="capacityColumn" text="Capacity" prefWidth="100"/>
+                        <TableColumn fx:id="availabilityColumn" text="Availability" prefWidth="150"/>
+                        <TableColumn fx:id="equipmentColumn" text="Equipment" prefWidth="200"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Profile Content -->
+            <VBox fx:id="profileContent" styleClass="content-container" visible="false">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="My Profile"/>
+                </HBox>
+                
+                <fx:include fx:id="profile" source="ProfileView.fxml"/>
+            </VBox>
+
+            <!-- Payments Content -->
+            <VBox fx:id="paymentsContent" styleClass="content-container" visible="false">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="Payments"/>
+                </HBox>
+                
+                <HBox styleClass="action-bar">
+                    <Button text="New Payment" onAction="#showNewPaymentDialog" 
+                            styleClass="action-button,primary-button">
+                        <graphic>
+                            <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
+                        </graphic>
+                    </Button>
+                </HBox>
+                
+                <TableView fx:id="paymentTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                    <columns>
+                        <TableColumn fx:id="paymentDateColumn" text="Date" prefWidth="150"/>
+                        <TableColumn fx:id="paymentDescriptionColumn" text="Description" prefWidth="200"/>
+                        <TableColumn fx:id="paymentAmountColumn" text="Amount" prefWidth="100"/>
+                        <TableColumn fx:id="paymentStatusColumn" text="Status" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </StackPane>
     </center>
     
     <bottom>
-        <HBox spacing="10">
-            <padding>
-                <Insets top="5.0" right="10.0" bottom="5.0" left="10.0"/>
-            </padding>
-            <Label fx:id="statusLabel" text="Ready"/>
+        <HBox styleClass="status-bar">
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-label"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="v1.0.0" styleClass="version-label"/>
         </HBox>
     </bottom>
     

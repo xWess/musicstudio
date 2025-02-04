@@ -8,10 +8,15 @@ public class Artist extends User {
 
     public Artist() {
         super();
+        setRole(Role.ARTIST);
     }
 
-    public Artist(Integer id, String name, String email, String role) {
-        super(id, name, email, Role.valueOf(role.toUpperCase()));
+    public Artist(Integer id, String name, String email) {
+        super();
+        setId(id);
+        setName(name);
+        setEmail(email);
+        setRole(Role.ARTIST);
         this.bookedRooms = new ArrayList<>();
     }
 

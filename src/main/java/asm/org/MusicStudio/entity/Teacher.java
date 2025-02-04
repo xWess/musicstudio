@@ -8,10 +8,15 @@ public class Teacher extends User {
 
     public Teacher() {
         super();
+        setRole(Role.TEACHER);
     }
 
-    public Teacher(Integer id, String name, String email, String role) {
-        super(id, name, email, Role.valueOf(role.toUpperCase()));
+    public Teacher(Integer id, String name, String email) {
+        super();
+        setId(id);
+        setName(name);
+        setEmail(email);
+        setRole(Role.TEACHER);
         this.assignedCourses = new ArrayList<>();
     }
 } 
