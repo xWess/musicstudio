@@ -1,48 +1,98 @@
 package asm.org.MusicStudio.entity;
 
 import javafx.beans.property.*;
+import java.time.LocalDateTime;
+import lombok.Data;
 
-public abstract class User {
-    private final IntegerProperty id = new SimpleIntegerProperty();
-    private final StringProperty name = new SimpleStringProperty();
-    private final StringProperty email = new SimpleStringProperty();
-    private final ObjectProperty<Role> role = new SimpleObjectProperty<>();
+@Data
+public class User {
+    public User() {
+        this.idProperty.set(0);
+        this.nameProperty.set("");
+        this.emailProperty.set("");
+        this.roleProperty.set(Role.STUDENT);
+        this.passwordProperty.set("");
+        this.saltProperty.set("");
+        this.activeProperty.set(true);
+        this.lastLoginProperty.set(LocalDateTime.now());
+        this.resetToken.set("");
+        this.resetTokenExpiry.set(null);
+    }
+
+    private final IntegerProperty idProperty = new SimpleIntegerProperty();
+    private final StringProperty nameProperty = new SimpleStringProperty();
+    private final StringProperty emailProperty = new SimpleStringProperty();
+    private final ObjectProperty<Role> roleProperty = new SimpleObjectProperty<>();
+    private final StringProperty passwordProperty = new SimpleStringProperty();
+    private final StringProperty saltProperty = new SimpleStringProperty();
+    private final BooleanProperty activeProperty = new SimpleBooleanProperty(true);
+    private final ObjectProperty<LocalDateTime> lastLoginProperty = 
+        new SimpleObjectProperty<>();
+    private final StringProperty resetToken = new SimpleStringProperty();
+    private final ObjectProperty<LocalDateTime> resetTokenExpiry = 
+        new SimpleObjectProperty<>();
 
     // Property getters
-    public IntegerProperty idProperty() { return id; }
-    public StringProperty nameProperty() { return name; }
-    public StringProperty emailProperty() { return email; }
-    public ObjectProperty<Role> roleProperty() { return role; }
+    public IntegerProperty idProperty() { return idProperty; }
+    public StringProperty nameProperty() { return nameProperty; }
+    public StringProperty emailProperty() { return emailProperty; }
+    public ObjectProperty<Role> roleProperty() { return roleProperty; }
+    public StringProperty passwordProperty() { return passwordProperty; }
+    public StringProperty saltProperty() { return saltProperty; }
+    public BooleanProperty activeProperty() { return activeProperty; }
+    public ObjectProperty<LocalDateTime> lastLoginProperty() { return lastLoginProperty; }
+    public StringProperty resetTokenProperty() { return resetToken; }
+    public ObjectProperty<LocalDateTime> resetTokenExpiryProperty() { return resetTokenExpiry; }
 
     // Regular getters and setters
-    public int getId() { return id.get(); }
-    public void setId(int id) { this.id.set(id); }
+    public int getId() { return idProperty.get(); }
+    public void setId(int id) { this.idProperty.set(id); }
     
-    public String getName() { return name.get(); }
-    public void setName(String name) { this.name.set(name); }
+    public String getName() { return nameProperty.get(); }
+    public void setName(String name) { this.nameProperty.set(name); }
     
-    public String getEmail() { return email.get(); }
-    public void setEmail(String email) { this.email.set(email); }
+    public String getEmail() { return emailProperty.get(); }
+    public void setEmail(String email) { this.emailProperty.set(email); }
+
+    public void setRole(Role role) {
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null");
+        }
+        this.roleProperty.set(role);
+    }
 
     public void setRole(String roleStr) {
-        try {
-            this.role.set(Role.valueOf(roleStr.toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Role must be either 'student', 'teacher', or 'artist'");
+        if (roleStr == null || roleStr.trim().isEmpty()) {
+            throw new IllegalArgumentException("Role string cannot be null or empty");
         }
+        setRole(Role.fromString(roleStr));
     }
 
-    public User() {
-        // Default constructor
+    public Role getRole() {
+        Role role = roleProperty.get();
+        System.out.println("Getting role: " + role); // Debug log
+        return role;
     }
 
-    public User(Integer id, String name, String email, Role role) {
-        setId(id);
-        setName(name);
-        setEmail(email);
-        this.role.set(role);
+    public String getPassword() { return passwordProperty.get(); }
+    public void setPassword(String password) { this.passwordProperty.set(password); }
+    
+    public String getSalt() { return saltProperty.get(); }
+    public void setSalt(String salt) { this.saltProperty.set(salt); }
+    
+    public boolean isActive() { return activeProperty.get(); }
+    public void setActive(boolean active) { this.activeProperty.set(active); }
+    
+    public LocalDateTime getLastLogin() { return lastLoginProperty.get(); }
+    public void setLastLogin(LocalDateTime lastLogin) { 
+        this.lastLoginProperty.set(lastLogin); 
     }
-
-    public Role getRole() { return role.get(); }
-    public void setRole(Role role) { this.role.set(role); }
+    
+    public String getResetToken() { return resetToken.get(); }
+    public void setResetToken(String token) { this.resetToken.set(token); }
+    
+    public LocalDateTime getResetTokenExpiry() { return resetTokenExpiry.get(); }
+    public void setResetTokenExpiry(LocalDateTime expiry) { 
+        this.resetTokenExpiry.set(expiry); 
+    }
 } 

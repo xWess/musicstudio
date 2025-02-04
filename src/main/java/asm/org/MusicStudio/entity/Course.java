@@ -13,10 +13,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course {
-    private Integer courseId;
+    private Integer id;
     private String name;
-    private Schedule schedule;
-    private Teacher teacher;
+    private String description;
+    private Double monthlyFee;
+    private String instructor;
+    private Integer maxStudents;
+    private String schedule; // e.g., "Monday, Wednesday 15:00-16:30"
     @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
 
@@ -27,5 +30,9 @@ public class Course {
 
     public void removeEnrollment(Enrollment enrollment) {
         enrollments.remove(enrollment);
+    }
+
+    public double getMonthlyFee() {
+        return monthlyFee;
     }
 }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox fx:id="roomsContent" styleClass="content-container"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="asm.org.MusicStudio.controllers.RoomViewController">
+    
+    <HBox styleClass="page-header">
+        <Text styleClass="page-title" text="Practice Rooms"/>
+    </HBox>
+    
+    <HBox styleClass="action-bar">
+        <Button text="Book Room" onAction="#showRoomBookingDialog" 
+                styleClass="action-button,primary-button">
+            <graphic>
+                <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
+            </graphic>
+        </Button>
+        <Region HBox.hgrow="ALWAYS"/>
+        <DatePicker fx:id="roomDatePicker"/>
+    </HBox>
+    
+    <TableView fx:id="roomsTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="roomNumberColumn" text="Room" prefWidth="100"/>
+            <TableColumn fx:id="roomTypeColumn" text="Type" prefWidth="150"/>
+            <TableColumn fx:id="capacityColumn" text="Capacity" prefWidth="100"/>
+            <TableColumn fx:id="availabilityColumn" text="Availability" prefWidth="150"/>
+            <TableColumn fx:id="equipmentColumn" text="Equipment" prefWidth="200"/>
+        </columns>
+    </TableView>
+</VBox> 

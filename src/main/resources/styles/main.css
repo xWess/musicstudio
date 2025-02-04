@@ -1,42 +1,474 @@
+/* Font Import */
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Inter Medium';
+    src: url('../fonts/Inter-Medium.ttf');
+}
+
+@font-face {
+    font-family: 'Inter SemiBold';
+    src: url('../fonts/Inter-SemiBold.ttf');
+}
+
+@font-face {
+    font-family: 'Inter Bold';
+    src: url('../fonts/Inter-Bold.ttf');
+}
+
+/* Variables - GitHub Dark Theme Colors */
 .root {
-    -fx-font-family: "Segoe UI", Arial, sans-serif;
-    -fx-background-color: #f5f5f5;
+    -fx-font-family: 'Inter';
+    -fx-font-smoothing-type: gray;  /* Enable font smoothing */
+    
+    /* GitHub Dark Theme Colors */
+    -bg-dark: #22272e;  /* GitHub dark background */
+    -bg-darker: #1c2128; /* GitHub darker background */
+    -bg-lighter: #2d333b; /* GitHub lighter background */
+    -bg-hover: #323942; /* GitHub hover state */
+    
+    /* GitHub Colors */
+    -primary-color: #2f81f7;  /* GitHub blue */
+    -primary-hover: #1f6feb;
+    -danger-color: #f85149;
+    -success-color: #3fb950;
+    -warning-color: #d29922;
+    
+    /* GitHub Neutral Colors */
+    -border-color: #373e47;
+    -text-primary: #adbac7;
+    -text-secondary: #768390;
+    -text-white: #cdd9e5;
+    -text-bright: #ffffff;
+
+    -fx-background-color: -bg-dark;
+
+    /* Remove fixed sizing */
+    -fx-min-width: 400px;
+    -fx-min-height: 500px;
 }
 
+/* Header Styles */
+.header-bar {
+    -fx-background-color: -bg-darker;
+    -fx-border-color: -border-color transparent transparent transparent;
+    -fx-padding: 16px 24px;
+}
+
+.header-title {
+    -fx-font-family: 'Inter SemiBold';
+    -fx-font-size: 20px;
+    -fx-fill: -text-white;
+    -fx-font-smoothing-type: gray;
+}
+
+/* Menu Bar */
+.menu-bar {
+    -fx-background-color: -bg-darker;
+    -fx-padding: 8px;
+    -fx-border-color: transparent transparent -border-color transparent;
+}
+
+.menu-bar .menu .label {
+    -fx-text-fill: -text-primary;
+    -fx-font-size: 13px;
+}
+
+.menu-bar .menu:hover .label {
+    -fx-text-fill: -text-white;
+}
+
+/* Sidebar */
 .sidebar {
-    -fx-background-color: #2c3e50;
-    -fx-min-width: 200px;
+    -fx-background-color: -bg-darker;
+    -fx-border-color: transparent -border-color transparent transparent;
+    -fx-pref-width: 280px;
 }
 
-.sidebar .button {
+.sidebar-header {
+    -fx-padding: 24px 16px 16px 16px;
+}
+
+.sidebar-title {
+    -fx-font-family: 'Inter Medium';
+    -fx-font-size: 12px;
+    -fx-fill: -text-secondary;
+    -fx-font-weight: 500;  /* Using medium weight */
+    -fx-text-transform: uppercase;
+    -fx-letter-spacing: 0.03em;  /* Slightly reduced for Inter */
+}
+
+.nav-buttons {
+    -fx-spacing: 2px;
+    -fx-padding: 8px;
+}
+
+.nav-button {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
-    -fx-border-color: transparent;
+    -fx-text-fill: -text-primary;
+    -fx-padding: 8px 16px;
+    -fx-font-family: 'Inter Medium';
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;  /* Medium weight for nav items */
+    -fx-graphic-text-gap: 12px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-min-width: 264px;
     -fx-cursor: hand;
+    -fx-background-radius: 6px;
 }
 
-.sidebar .button:hover {
-    -fx-background-color: #34495e;
+.nav-button:hover {
+    -fx-background-color: -bg-hover;
+    -fx-text-fill: -text-white;
 }
 
-.status-bar {
-    -fx-background-color: #ecf0f1;
-    -fx-border-width: 1 0 0 0;
-    -fx-border-color: #bdc3c7;
+.nav-button.selected {
+    -fx-background-color: -bg-hover;
+    -fx-text-fill: -text-white;
+}
+
+.nav-button.selected:hover {
+    -fx-background-color: derive(-bg-hover, 5%);
+}
+
+/* Content Area */
+.content-area {
+    -fx-background-color: -bg-dark;
+    -fx-padding: 24px;
+}
+
+.content-container {
+    -fx-background-color: -bg-darker;
+    -fx-background-radius: 6px;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 6px;
+    -fx-spacing: 24px;
+    -fx-padding: 24px;
+}
+
+.page-header {
+    -fx-padding: 20 0 20 0;
+    -fx-border-color: transparent transparent -border-color transparent;
+}
+
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* Action Buttons - Enhanced */
+.action-bar {
+    -fx-padding: 0 0 20 0;
+    -fx-spacing: 10;
+}
+
+.action-button {
+    -fx-background-color: #373e47;  /* GitHub button background */
+    -fx-text-fill: #cdd9e5;  /* GitHub button text */
+    -fx-padding: 8 16;
+    -fx-font-family: 'Inter Medium';
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;  /* Medium weight for buttons */
+    -fx-graphic-text-gap: 8px;
+    -fx-background-radius: 6px;
+    -fx-border-color: rgba(205, 217, 229, 0.1);  /* Subtle border */
+    -fx-border-radius: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 1, 0, 0, 1);
+    -fx-min-height: 30px;
+}
+
+.action-button:hover {
+    -fx-background-color: #444c56;  /* GitHub button hover */
+    -fx-border-color: rgba(205, 217, 229, 0.2);
+}
+
+.primary-button {
+    -fx-background-color: #2196f3;
+    -fx-text-fill: white;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1976d2;
+}
+
+.danger-button {
+    -fx-background-color: #f44336;
+    -fx-text-fill: white;
+}
+
+.danger-button:hover {
+    -fx-background-color: #f85149;  /* GitHub red hover */
+    -fx-border-color: rgba(205, 217, 229, 0.2);
+}
+
+/* Action Icons - Enhanced */
+.action-icon {
+    -fx-fill: -text-white;
+    -fx-icon-color: -text-white;
+    -fx-opacity: 0.9;
+}
+
+/* Icons */
+.nav-icon,
+.nav-button .ikonli-font-icon {
+    -fx-fill: -text-secondary;
+    -fx-icon-color: -text-secondary;
+}
+
+.nav-button:hover .ikonli-font-icon,
+.nav-button.selected .ikonli-font-icon {
+    -fx-fill: -text-white;
+    -fx-icon-color: -text-white;
+}
+
+/* Tables - Enhanced */
+.data-table {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
 }
 
 .table-view {
-    -fx-background-color: white;
+    -fx-background-color: transparent;
+    -fx-table-cell-border-color: transparent;
 }
 
-.menu-bar {
-    -fx-background-color: #2c3e50;
+/* Table Header */
+.table-view .column-header-background {
+    -fx-background-color: #22272e;  /* GitHub table header background */
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
-.menu-bar .label {
+.table-view .column-header {
+    -fx-background-color: #22272e;
+    -fx-border-color: transparent transparent #30363d transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px 16px;
+    -fx-size: 40px;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #e6edf3;  /* GitHub header text color */
+    -fx-font-family: 'Inter Medium';
+    -fx-font-size: 12px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Table Rows */
+.table-view .table-row-cell {
+    -fx-background-color: #22272e;
+    -fx-border-color: transparent transparent #30363d transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #1c2128;  /* GitHub alternate row color */
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #2d333b;  /* GitHub selected row color */
+}
+
+.table-view .table-row-cell:hover {
+    -fx-background-color: #2d333b;  /* GitHub hover color */
+}
+
+/* Table Cells */
+.table-view .table-cell {
+    -fx-border-color: transparent;
+    -fx-padding: 8px 16px;
+    -fx-text-fill: #adbac7;  /* GitHub cell text color */
+    -fx-font-family: 'Inter';
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Empty rows */
+.table-view .table-row-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* Table Scrollbar */
+.table-view .virtual-flow .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .virtual-flow .scroll-bar:vertical .thumb {
+    -fx-background-color: #373e47;
+    -fx-background-radius: 6px;
+    -fx-opacity: 0.8;
+}
+
+.table-view .virtual-flow .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #444c56;
+    -fx-opacity: 1;
+}
+
+/* Hide table header separator */
+.table-view .column-header-background .filler {
+    -fx-background-color: transparent;
+}
+
+/* Table Selection Colors */
+.table-row-cell:filled:selected .table-cell {
+    -fx-text-fill: #e6edf3;  /* Brighter text for selected rows */
+}
+
+/* Table Focus */
+.table-view:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 6px;
+}
+
+/* Status Bar */
+.status-bar {
+    -fx-background-color: -bg-darker;
+    -fx-padding: 8px 16px;
+    -fx-border-color: -border-color transparent transparent transparent;
+}
+
+.status-label {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 400;  /* Regular weight */
+}
+
+.version-label {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 12px;
+    -fx-font-weight: 400;
+}
+
+/* Dialog styling */
+.dialog-pane {
+    -fx-background-color: -bg-darker;
+    -fx-padding: 24px;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: -bg-darker;
+    -fx-padding: 0 0 16px 0;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-white;
+}
+
+.dialog-pane .content {
+    -fx-text-fill: -text-primary;
+}
+
+.dialog-pane .button {
+    -fx-background-radius: 6px;
+    -fx-padding: 6px 12px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* Scrollbars */
+.scroll-bar {
+    -fx-background-color: -bg-darker;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: -bg-hover;
+    -fx-background-radius: 6px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: derive(-bg-hover, 10%);
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+}
+
+/* Payment Dialog Styles */
+.price-label {
+    -fx-font-family: 'Inter SemiBold';
+    -fx-font-size: 16px;
+    -fx-text-fill: #2ea043;  /* GitHub green */
+}
+
+.total-label {
+    -fx-font-family: 'Inter Bold';
+    -fx-font-size: 18px;
+    -fx-text-fill: #2ea043;  /* GitHub green */
+}
+
+.dialog-pane .label {
+    -fx-text-fill: -text-primary;
+}
+
+.dialog-pane .button {
+    -fx-background-color: #238636;  /* GitHub green button */
     -fx-text-fill: white;
+    -fx-font-family: 'Inter Medium';
+    -fx-cursor: hand;
 }
 
-.menu-item .label {
-    -fx-text-fill: black;
+.dialog-pane .button:hover {
+    -fx-background-color: #2ea043;
+}
+
+.dialog-pane .combo-box {
+    -fx-background-color: -bg-dark;
+    -fx-text-fill: -text-primary;
+    -fx-pref-width: 300px;
+}
+
+.dialog-pane .spinner {
+    -fx-background-color: -bg-dark;
+    -fx-text-fill: -text-primary;
+}
+
+.login-container {
+    -fx-background-color: #f5f5f5;
+}
+
+.login-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.login-field {
+    -fx-pref-width: 300px;
+    -fx-pref-height: 40px;
+    -fx-font-size: 14px;
+}
+
+.login-button {
+    -fx-background-color: #2196f3;
+    -fx-text-fill: white;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 40px;
+    -fx-font-size: 14px;
+}
+
+.login-button:hover {
+    -fx-background-color: #1976d2;
+}
+
+.error-label {
+    -fx-text-fill: #f44336;
+    -fx-font-size: 12px;
+}
+
+.filter-combo {
+    -fx-pref-width: 120px;
+    -fx-min-height: 30px;
 } 
