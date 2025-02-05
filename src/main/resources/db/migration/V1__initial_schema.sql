@@ -1,25 +1,18 @@
 -- V1__initial_schema.sql
 -- Initial database schema for Music Studio application
 
--- Drop existing tables if they exist
-DROP TABLE IF EXISTS spring_session_attributes CASCADE;
-DROP TABLE IF EXISTS spring_session CASCADE;
-DROP TABLE IF EXISTS student_courses CASCADE;
-DROP TABLE IF EXISTS artists CASCADE;
-DROP TABLE IF EXISTS students CASCADE;
-DROP TABLE IF EXISTS teachers CASCADE;
-DROP TABLE IF EXISTS enrollments CASCADE;
-DROP TABLE IF EXISTS schedules CASCADE;
-DROP TABLE IF EXISTS courses CASCADE;
-DROP TABLE IF EXISTS rooms CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
 -- Create users table (base table for Student, Teacher, Artist)
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'teacher', 'artist', 'admin'))
+    password VARCHAR(60) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT true,
+    last_login TIMESTAMP,
+    reset_token VARCHAR(36),
+    reset_token_expiry TIMESTAMP,
+    CONSTRAINT users_role_check CHECK (role IN ('student', 'teacher', 'artist', 'admin'))
 );
 
 -- Create rooms table
@@ -33,20 +26,22 @@ CREATE TABLE rooms (
 CREATE TABLE courses (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    teacher_id INTEGER REFERENCES users(id)
+    description TEXT,
+    teacher_id INTEGER REFERENCES users(id),
+    monthly_fee DECIMAL(10,2) NOT NULL DEFAULT 80.00,
+    max_students INTEGER NOT NULL DEFAULT 20,
+    active BOOLEAN NOT NULL DEFAULT true,
+    schedule VARCHAR(200)
 );
 
--- Create schedules table
-CREATE TABLE schedules (
+-- Create payments table
+CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
-    day_of_week VARCHAR(10) NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    course_id INTEGER REFERENCES courses(id),
-    room_id INTEGER REFERENCES rooms(id),
-    booked_by INTEGER REFERENCES users(id),
-    CONSTRAINT valid_day_of_week CHECK (day_of_week IN 
-        ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'))
+    user_id INTEGER REFERENCES users(id),
+    description VARCHAR(255) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_date TIMESTAMP NOT NULL,
+    status VARCHAR(20) NOT NULL
 );
 
 -- Create enrollments table (junction table between students and courses)
@@ -54,36 +49,19 @@ CREATE TABLE enrollments (
     id SERIAL PRIMARY KEY,
     student_id INTEGER REFERENCES users(id),
     course_id INTEGER REFERENCES courses(id),
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    end_date DATE NOT NULL,
+    payment_id INTEGER REFERENCES payments(id),
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    CONSTRAINT enrollments_status_check CHECK (status IN ('ACTIVE', 'COMPLETED', 'CANCELLED')),
     UNIQUE(student_id, course_id)
 );
 
--- Add indexes for common queries
+-- Create indexes for performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_courses_teacher ON courses(teacher_id);
-CREATE INDEX idx_schedules_course ON schedules(course_id);
-CREATE INDEX idx_schedules_room ON schedules(room_id);
-CREATE INDEX idx_enrollments_student ON enrollments(student_id);
-CREATE INDEX idx_enrollments_course ON enrollments(course_id);
-
--- Add some sample data for testing
-INSERT INTO users (name, email, role) VALUES
-('John Doe', 'john.doe@example.com', 'teacher'),
-('Jane Smith', 'jane.smith@example.com', 'student'),
-('Bob Artist', 'bob.artist@example.com', 'artist');
-
-INSERT INTO rooms (location, capacity) VALUES
-('Room 101', 20),
-('Studio A', 5);
-
-INSERT INTO courses (name, teacher_id) VALUES
-('Piano Basics', 1),
-('Advanced Guitar', 1);
-
--- Add sample schedule
-INSERT INTO schedules (day_of_week, start_time, end_time, course_id, room_id) VALUES
-('MONDAY', '09:00:00', '10:00:00', 1, 1);
-
--- Add sample enrollment
-INSERT INTO enrollments (student_id, course_id) VALUES
-(2, 1); 
+CREATE INDEX idx_payments_user ON payments(user_id);
+CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_enrollments_payment ON enrollments(payment_id);
+CREATE INDEX idx_enrollments_dates ON enrollments(start_date, end_date); 
