@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import java.time.LocalDate;
 
@@ -16,9 +17,11 @@ public class EnrollmentDialog extends Dialog<Enrollment> {
     private TextField scheduleField;
 
     public EnrollmentDialog() {
-        setTitle("New Enrollment");
-        setHeaderText("Please enter enrollment details");
-
+        setTitle("Enroll in Course");
+        
+        DialogPane dialogPane = getDialogPane();
+        VBox content = new VBox(10);
+        
         // Create UI components
         courseComboBox = new ComboBox<>();
         courseComboBox.getItems().addAll("Piano Basics", "Guitar 101", "Voice Training");
@@ -47,37 +50,31 @@ public class EnrollmentDialog extends Dialog<Enrollment> {
         grid.add(new Label("Schedule:"), 0, 3);
         grid.add(scheduleField, 1, 3);
 
-        getDialogPane().setContent(grid);
+        content.getChildren().add(grid);
 
-        // Add buttons
-        ButtonType enrollButton = new ButtonType("Enroll", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(enrollButton, ButtonType.CANCEL);
+        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                Course course = Course.builder()
+                    .name(courseComboBox.getValue())
+                    .instructor(instructorField.getText())
+                    .schedule(scheduleField.getText())
+                    .build();
 
-        // Convert result - this is the only place that should create an Enrollment
-        setResultConverter(new Callback<ButtonType, Enrollment>() {
-            @Override
-            public Enrollment call(ButtonType button) {
-                if (button == enrollButton) {
-                    Course course = Course.builder()
-                        .name(courseComboBox.getValue())
-                        .instructor(instructorField.getText())
-                        .schedule(scheduleField.getText())
-                        .build();
-
-                    return Enrollment.builder()
-                        .course(course)
-                        .startDate(LocalDate.now())
-                        .endDate(LocalDate.now().plusMonths(4))
-                        .status("PENDING")
-                        .build();
-                }
-                return null;
+                return Enrollment.builder()
+                    .course(course)
+                    .startDate(LocalDate.now())
+                    .endDate(LocalDate.now().plusMonths(4))
+                    .status("PENDING")
+                    .build();
             }
+            return null;
         });
 
         // Add validation
-        Node enrollButtonNode = getDialogPane().lookupButton(enrollButton);
-        enrollButtonNode.setDisable(true);
+        Node enrollButton = dialogPane.lookupButton(ButtonType.OK);
+        enrollButton.setDisable(true);
 
         // Enable button only when selections are made
         courseComboBox.valueProperty().addListener((obs, oldVal, newVal) -> 
@@ -87,11 +84,7 @@ public class EnrollmentDialog extends Dialog<Enrollment> {
     }
 
     private void validateInput() {
-        Node enrollButton = getDialogPane().lookupButton(
-            getDialogPane().getButtonTypes().stream()
-                .filter(bt -> bt.getButtonData() == ButtonBar.ButtonData.OK_DONE)
-                .findFirst().get()
-        );
+        Node enrollButton = getDialogPane().lookupButton(ButtonType.OK);
         
         boolean isValid = courseComboBox.getValue() != null && 
                          semesterComboBox.getValue() != null;

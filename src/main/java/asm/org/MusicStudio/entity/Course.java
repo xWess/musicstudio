@@ -15,11 +15,13 @@ import java.util.List;
 public class Course {
     private Integer id;
     private String name;
+    private User teacher;
+    private String schedule;
+    private Integer teacherId;
     private String description;
     private Double monthlyFee;
-    private String instructor;
     private Integer maxStudents;
-    private String schedule; // e.g., "Monday, Wednesday 15:00-16:30"
+    private Integer enrolledCount;
     @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
 
@@ -34,5 +36,10 @@ public class Course {
 
     public double getMonthlyFee() {
         return monthlyFee;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

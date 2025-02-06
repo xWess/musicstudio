@@ -7,6 +7,9 @@ import javafx.scene.control.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import asm.org.MusicStudio.dialogs.EnrollmentDialog;
+import javafx.beans.property.SimpleStringProperty;
+import asm.org.MusicStudio.entity.Course;
+import asm.org.MusicStudio.entity.User;
 
 public class EnrollmentViewController {
     @FXML private TableView<Enrollment> enrollmentTable;
@@ -54,14 +57,24 @@ public class EnrollmentViewController {
     }
 
     private void setupTableColumns() {
-        courseNameColumn.setCellValueFactory(cellData -> 
-            cellData.getValue().courseNameProperty());
-        instructorColumn.setCellValueFactory(cellData -> 
-            cellData.getValue().instructorProperty());
-        scheduleColumn.setCellValueFactory(cellData -> 
-            cellData.getValue().scheduleProperty());
+        courseNameColumn.setCellValueFactory(cellData -> {
+            Course course = cellData.getValue().getCourse();
+            return new SimpleStringProperty(course != null ? course.getName() : "");
+        });
+        
+        instructorColumn.setCellValueFactory(cellData -> {
+            Course course = cellData.getValue().getCourse();
+            User teacher = course != null ? course.getTeacher() : null;
+            return new SimpleStringProperty(teacher != null ? teacher.getName() : "");
+        });
+        
+        scheduleColumn.setCellValueFactory(cellData -> {
+            Course course = cellData.getValue().getCourse();
+            return new SimpleStringProperty(course != null ? course.getSchedule() : "");
+        });
+        
         enrollmentStatusColumn.setCellValueFactory(cellData -> 
-            cellData.getValue().statusProperty());
+            new SimpleStringProperty(cellData.getValue().getStatus()));
     }
 
     private void loadEnrollments() {

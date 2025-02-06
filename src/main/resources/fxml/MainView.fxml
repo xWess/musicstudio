@@ -7,6 +7,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.control.Tooltip?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -66,17 +67,29 @@
                     <graphic>
                         <FontIcon iconLiteral="fas-calendar"/>
                     </graphic>
+                    <tooltip>
+                        <Tooltip text="Schedule" />
+                    </tooltip>
                 </Button>
                 
                 <Button fx:id="enrollmentsButton" text="Enrollments" onAction="#showEnrollments" styleClass="nav-button">
                     <graphic>
-                        <FontIcon iconLiteral="fas-graduation-cap"/>
+                        <FontIcon iconLiteral="fas-book" />
                     </graphic>
                 </Button>
                 
                 <Button fx:id="roomsButton" text="Rooms" onAction="#showRooms" styleClass="nav-button">
                     <graphic>
                         <FontIcon iconLiteral="fas-door-open"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="studentsButton" 
+                        text="Students" 
+                        onAction="#showStudents" 
+                        styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-users" iconSize="16"/>
                     </graphic>
                 </Button>
                 
@@ -212,6 +225,11 @@
                         <TableColumn fx:id="paymentStatusColumn" text="Status" prefWidth="100"/>
                     </columns>
                 </TableView>
+            </VBox>
+
+            <!-- Students Content -->
+            <VBox fx:id="studentsContent" styleClass="content-container" visible="false">
+                <fx:include fx:id="studentsView" source="StudentsView.fxml"/>
             </VBox>
         </StackPane>
     </center>

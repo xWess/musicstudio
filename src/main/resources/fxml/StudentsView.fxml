@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox fx:id="studentsContent" spacing="10" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="asm.org.MusicStudio.controllers.StudentsViewController">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Text styleClass="title" text="My Students"/>
+    </HBox>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <ComboBox fx:id="courseFilter" promptText="Filter by Course"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Search students..."/>
+    </HBox>
+    
+    <TableView fx:id="studentsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="nameColumn" text="Student Name" prefWidth="200"/>
+            <TableColumn fx:id="emailColumn" text="Email" prefWidth="200"/>
+            <TableColumn fx:id="courseColumn" text="Course" prefWidth="200"/>
+            <TableColumn fx:id="progressColumn" text="Status" prefWidth="150"/>
+            <TableColumn fx:id="lastAttendanceColumn" text="Start Date" prefWidth="150"/>
+        </columns>
+    </TableView>
+</VBox> 

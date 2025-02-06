@@ -1,46 +1,51 @@
 package asm.org.MusicStudio.controllers;
 
-import asm.org.MusicStudio.entity.User;
-import asm.org.MusicStudio.entity.Artist;
-import asm.org.MusicStudio.entity.Role;
-import asm.org.MusicStudio.entity.Student;
-import asm.org.MusicStudio.entity.Teacher;
-import asm.org.MusicStudio.services.UserService;
-import asm.org.MusicStudio.services.UserServiceImpl;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import javafx.collections.FXCollections;
-import javafx.scene.layout.GridPane;
-import javafx.geometry.Insets;
-import asm.org.MusicStudio.entity.Payment;
-import asm.org.MusicStudio.services.PaymentService;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TextField;
+import java.io.IOException;
 import java.math.BigDecimal;
-import javafx.scene.control.cell.PropertyValueFactory;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.Button;
-import java.sql.SQLException;
-import asm.org.MusicStudio.entity.Course;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXMLLoader;
-import java.io.IOException;
 import java.util.Optional;
-import java.time.LocalDate;
+
+import asm.org.MusicStudio.entity.Artist;
+import asm.org.MusicStudio.entity.Course;
+import asm.org.MusicStudio.entity.Payment;
+import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.Schedule;
+import asm.org.MusicStudio.entity.Student;
+import asm.org.MusicStudio.entity.Teacher;
+import asm.org.MusicStudio.entity.User;
+import asm.org.MusicStudio.services.PaymentService;
+import asm.org.MusicStudio.services.ScheduleService;
+import asm.org.MusicStudio.services.UserService;
+import asm.org.MusicStudio.services.UserServiceImpl;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import asm.org.MusicStudio.services.ScheduleService;
-import asm.org.MusicStudio.entity.Schedule;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class MainController {
     @FXML
@@ -102,6 +107,8 @@ public class MainController {
     private Button roomsButton;
     @FXML
     private Button profileButton;
+    @FXML
+    private Button studentsButton;
 
     @FXML
     private VBox scheduleContent;
@@ -230,6 +237,7 @@ public class MainController {
         enrollmentsButton.getStyleClass().remove("selected");
         roomsButton.getStyleClass().remove("selected");
         profileButton.getStyleClass().remove("selected");
+        studentsButton.getStyleClass().remove("selected");
     }
 
     @FXML
@@ -281,31 +289,50 @@ public class MainController {
     @FXML
     private void showSchedule() {
         try {
-            if (scheduleService == null) {
-                throw new IllegalStateException("Schedule service not initialized");
+            if (currentUser == null || currentUser.getRole() != Role.TEACHER) {
+                showError("Access Denied", "Only teachers can access the schedule view.");
+                return;
             }
+
+            System.out.println("Loading schedule view for teacher ID: " + currentUser.getId());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ScheduleView.fxml"));
+            VBox scheduleView = loader.load();
             
-            hideAllContent();
-            if (scheduleContent != null) {
-                scheduleContent.setVisible(true);
-                scheduleContent.setManaged(true);
-            }
+            ScheduleViewController controller = loader.getController();
+            controller.setCurrentTeacherId(currentUser.getId());
+            
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(scheduleView);
+            
             updateNavButtonStates(scheduleButton);
-            
-            // Load schedule data
-            LocalDate today = LocalDate.now();
-            List<Schedule> schedules = scheduleService.getSchedule(today, "DAILY");
-            // Update your schedule view with the data
+            statusLabel.setText("Schedule view loaded successfully");
             
         } catch (Exception e) {
             e.printStackTrace();
-            showError("Error", "Failed to load schedule: " + e.getMessage());
+            showError("Error", "Failed to load schedule view: " + e.getMessage());
         }
     }
 
     @FXML
     private void showEnrollments() {
-        loadView("/fxml/EnrollmentView.fxml", enrollmentsButton);
+        try {
+            System.out.println("Loading enrollments view...");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EnrollmentView.fxml"));
+            VBox enrollmentView = loader.load();
+            
+            EnrollmentViewController controller = loader.getController();
+            // Set any necessary properties on the controller
+            
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(enrollmentView);
+            
+            updateNavButtonStates(enrollmentsButton);
+            statusLabel.setText("Enrollments view loaded successfully");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load enrollments view: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -349,6 +376,7 @@ public class MainController {
         if (enrollmentsButton != null) enrollmentsButton.getStyleClass().remove("selected");
         if (roomsButton != null) roomsButton.getStyleClass().remove("selected");
         if (profileButton != null) profileButton.getStyleClass().remove("selected");
+        if (studentsButton != null) studentsButton.getStyleClass().remove("selected");
         
         // Add selected class to the clicked button if it exists
         if (selectedButton != null) {
@@ -884,7 +912,24 @@ public class MainController {
 
     @FXML
     public void showEnrollmentsView() {
-        loadView("/fxml/EnrollmentView.fxml", enrollmentsButton);
+        try {
+            System.out.println("Loading enrollments view...");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EnrollmentView.fxml"));
+            VBox enrollmentView = loader.load();
+            
+            EnrollmentViewController controller = loader.getController();
+            // Initialize any controller properties if needed
+            
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(enrollmentView);
+            
+            updateNavButtonStates(enrollmentsButton);
+            statusLabel.setText("Enrollments view loaded successfully");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load enrollments view: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -952,5 +997,38 @@ public class MainController {
     private void toggleFullScreen() {
         Stage stage = (Stage) root.getScene().getWindow();
         stage.setFullScreen(!stage.isFullScreen());
+    }
+
+    @FXML
+    private void showStudents() {
+        try {
+            System.out.println("Attempting to show students view...");
+            // Only show for teachers
+            if (currentUser == null || currentUser.getRole() != Role.TEACHER) {
+                System.out.println("Access denied - current user role: " + 
+                    (currentUser != null ? currentUser.getRole() : "null"));
+                showError("Access Denied", "Only teachers can access the students view.");
+                return;
+            }
+
+            System.out.println("Loading students view for teacher ID: " + currentUser.getId());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/StudentsView.fxml"));
+            VBox studentsView = loader.load();
+            
+            StudentsViewController controller = loader.getController();
+            controller.setUserService(userService);
+            controller.setCurrentTeacherId(currentUser.getId());
+            
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(studentsView);
+            
+            updateNavButtonStates(studentsButton);
+            statusLabel.setText("Students view loaded successfully");
+            System.out.println("Students view loaded successfully");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load students view: " + e.getMessage());
+        }
     }
 }

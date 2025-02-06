@@ -1,25 +1,38 @@
 package asm.org.MusicStudio.services;
 
-import asm.org.MusicStudio.entity.Enrollment;
-import asm.org.MusicStudio.entity.Course;
-import asm.org.MusicStudio.entity.Student;
-import asm.org.MusicStudio.entity.Payment;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+
+import asm.org.MusicStudio.dao.EnrollmentDAO;
+import asm.org.MusicStudio.entity.Course;
+import asm.org.MusicStudio.entity.Enrollment;
+import asm.org.MusicStudio.entity.Payment;
+import asm.org.MusicStudio.entity.Student;
 
 public class EnrollmentService {
     
+    private EnrollmentDAO enrollmentDAO;
+
+    public EnrollmentService() {
+        this.enrollmentDAO = new EnrollmentDAO();
+    }
+
     /**
      * Gets all enrollments for the current user
      * @param semester Filter by semester (optional)
      * @return List of enrollments
      */
     public List<Enrollment> getEnrollments(String semester) {
-        //TODO: Implement enrollment retrieval from database
-        //TODO: Apply semester filter if provided
-        //TODO: Join with courses and teachers tables
-        //TODO: Filter by current user
-        return null;
+        try {
+            // For now, just get all enrollments without semester filter
+            return enrollmentDAO.findByTeacherId(getCurrentUserId());
+        } catch (SQLException e) {
+            System.err.println("Error fetching enrollments: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
     
     /**
@@ -95,5 +108,20 @@ public class EnrollmentService {
         //TODO: Update enrollment record
         //TODO: Update course capacity if needed
         //TODO: Handle payment implications
+    }
+
+    public List<Enrollment> getEnrollmentsByTeacher(int teacherId) {
+        try {
+            return enrollmentDAO.findByTeacherId(teacherId);
+        } catch (SQLException e) {
+            System.err.println("Error fetching teacher enrollments: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    private int getCurrentUserId() {
+        // TODO: Implement proper user session management
+        return 1; // Temporary default value
     }
 } 
