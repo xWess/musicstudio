@@ -12,8 +12,7 @@
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
 
-    <!-- Important: Add the fx:id to connect to the controller -->
-    <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+    <TableView fx:id="userTable" VBox.vgrow="ALWAYS" styleClass="data-table">
         <columns>
             <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
             <TableColumn fx:id="nameColumn" text="Name" prefWidth="150"/>
@@ -21,4 +20,4 @@
             <TableColumn fx:id="roleColumn" text="Role" prefWidth="100"/>
         </columns>
     </TableView>
-</VBox> 
+</VBox>

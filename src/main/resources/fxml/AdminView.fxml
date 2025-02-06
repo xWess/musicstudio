@@ -41,7 +41,7 @@
             </VBox>
             
             <VBox styleClass="nav-buttons">
-                <Button fx:id="usersButton" text="Users" styleClass="nav-button,selected">
+                <Button fx:id="usersButton" text="Users" styleClass="nav-button selected">
                     <graphic>
                         <FontIcon iconLiteral="fas-users" iconSize="20" styleClass="nav-icon"/>
                     </graphic>
@@ -69,7 +69,7 @@
                 </HBox>
                 
                 <HBox styleClass="action-bar">
-                    <Button text="Add User" onAction="#showAddUserDialog" styleClass="action-button, primary-button">
+                    <Button text="Add User" onAction="#showAddUserDialog" styleClass="action-button primary-button">
                         <graphic>
                             <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
                         </graphic>
@@ -79,7 +79,7 @@
                             <FontIcon iconLiteral="fas-edit" iconSize="16" styleClass="action-icon"/>
                         </graphic>
                     </Button>
-                    <Button text="Delete User" onAction="#handleDeleteUser" styleClass="action-button, danger-button">
+                    <Button text="Delete User" onAction="#handleDeleteUser" styleClass="action-button danger-button">
                         <graphic>
                             <FontIcon iconLiteral="fas-trash" iconSize="16" styleClass="action-icon"/>
                         </graphic>
@@ -115,4 +115,4 @@
         </HBox>
     </bottom>
     
-</BorderPane> 
+</BorderPane>

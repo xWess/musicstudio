@@ -127,6 +127,12 @@ public class MainController {
     private User currentUser;
 
     @FXML
+    private VBox coursesContent;
+    
+    @FXML
+    private Button coursesButton;  // Add this if you have a courses navigation button
+
+    @FXML
     public void initialize() {
         try {
             // Initialize services
@@ -230,6 +236,10 @@ public class MainController {
         enrollmentsButton.getStyleClass().remove("selected");
         roomsButton.getStyleClass().remove("selected");
         profileButton.getStyleClass().remove("selected");
+        // Add courses button
+        if (coursesButton != null) {
+            coursesButton.getStyleClass().remove("selected");
+        }
     }
 
     @FXML
@@ -400,6 +410,11 @@ public class MainController {
         if (profileContent != null) {
             profileContent.setVisible(false);
             profileContent.setManaged(false);
+        }
+        // Add new content container
+        if (coursesContent != null) {
+            coursesContent.setVisible(false);
+            coursesContent.setManaged(false);
         }
 
         // Clear any selections
@@ -952,5 +967,31 @@ public class MainController {
     private void toggleFullScreen() {
         Stage stage = (Stage) root.getScene().getWindow();
         stage.setFullScreen(!stage.isFullScreen());
+    }
+
+    @FXML
+    private void showCourses() {
+        try {
+            hideAllContent();
+            if (coursesContent != null) {
+                coursesContent.setVisible(true);
+                coursesContent.setManaged(true);
+            }
+            updateNavButtonStates(coursesButton);
+            statusLabel.setText("Courses view loaded");
+
+            // Refresh the CourseViewController
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CourseView.fxml"));
+            Node courseView = loader.load();
+            CourseViewController courseViewController = loader.getController();
+            courseViewController.refreshView(); // Call refresh method
+
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(courseView); // Add the course view to the content area
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load courses view: " + e.getMessage());
+        }
     }
 }

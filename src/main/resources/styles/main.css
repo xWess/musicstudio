@@ -19,39 +19,37 @@
     src: url('../fonts/Inter-Bold.ttf');
 }
 
-/* Variables - GitHub Dark Theme Colors */
+/* Variables - Updated Color Palette */
 .root {
     -fx-font-family: 'Inter';
-    -fx-font-smoothing-type: gray;  /* Enable font smoothing */
+    -fx-font-smoothing-type: gray;
     
-    /* GitHub Dark Theme Colors */
-    -bg-dark: #22272e;  /* GitHub dark background */
-    -bg-darker: #1c2128; /* GitHub darker background */
-    -bg-lighter: #2d333b; /* GitHub lighter background */
-    -bg-hover: #323942; /* GitHub hover state */
+    /* Base Theme Colors */
+    -bg-dark: #1a1b26;       /* Darker background */
+    -bg-darker: #13141f;     /* Darkest background */
+    -bg-lighter: #24283b;    /* Lighter background */
+    -bg-hover: #2f354d;      /* Hover state */
     
-    /* GitHub Colors */
-    -primary-color: #2f81f7;  /* GitHub blue */
-    -primary-hover: #1f6feb;
-    -danger-color: #f85149;
-    -success-color: #3fb950;
-    -warning-color: #d29922;
+    /* Primary Colors */
+    -primary-color: #7aa2f7;    /* Bright blue */
+    -primary-hover: #89b4ff;    /* Lighter blue */
+    -danger-color: #f7768e;     /* Soft red */
+    -success-color: #9ece6a;    /* Soft green */
+    -warning-color: #e0af68;    /* Soft yellow */
     
-    /* GitHub Neutral Colors */
-    -border-color: #373e47;
-    -text-primary: #adbac7;
-    -text-secondary: #768390;
-    -text-white: #cdd9e5;
-    -text-bright: #ffffff;
+    /* Neutral Colors */
+    -border-color: #292e42;     /* Border color */
+    -text-primary: #c0caf5;     /* Main text */
+    -text-secondary: #7982a9;   /* Secondary text */
+    -text-white: #d5ddfb;       /* Bright text */
+    -text-bright: #ffffff;      /* Pure white text */
 
     -fx-background-color: -bg-dark;
-
-    /* Remove fixed sizing */
     -fx-min-width: 400px;
     -fx-min-height: 500px;
 }
 
-/* Header Styles */
+/* Header Styles - Updated */
 .header-bar {
     -fx-background-color: -bg-darker;
     -fx-border-color: -border-color transparent transparent transparent;
@@ -61,11 +59,11 @@
 .header-title {
     -fx-font-family: 'Inter SemiBold';
     -fx-font-size: 20px;
-    -fx-fill: -text-white;
-    -fx-font-smoothing-type: gray;
+    -fx-fill: -text-bright;
+    -fx-text-fill: -text-bright;
 }
 
-/* Menu Bar */
+/* Menu Bar - Updated */
 .menu-bar {
     -fx-background-color: -bg-darker;
     -fx-padding: 8px;
@@ -73,12 +71,11 @@
 }
 
 .menu-bar .menu .label {
-    -fx-text-fill: -text-primary;
-    -fx-font-size: 13px;
+    -fx-text-fill: -text-white;
 }
 
 .menu-bar .menu:hover .label {
-    -fx-text-fill: -text-white;
+    -fx-text-fill: -text-bright;
 }
 
 /* Sidebar */
@@ -92,13 +89,15 @@
     -fx-padding: 24px 16px 16px 16px;
 }
 
+/* Sidebar Title - Updated */
 .sidebar-title {
     -fx-font-family: 'Inter Medium';
     -fx-font-size: 12px;
-    -fx-fill: -text-secondary;
+    -fx-fill: -text-white;
     -fx-font-weight: 500;  /* Using medium weight */
     -fx-text-transform: uppercase;
     -fx-letter-spacing: 0.03em;  /* Slightly reduced for Inter */
+    -fx-text-fill: -text-white;
 }
 
 .nav-buttons {
@@ -122,16 +121,16 @@
 
 .nav-button:hover {
     -fx-background-color: -bg-hover;
-    -fx-text-fill: -text-white;
+    -fx-text-fill: -text-bright;
 }
 
 .nav-button.selected {
-    -fx-background-color: -bg-hover;
-    -fx-text-fill: -text-white;
+    -fx-background-color: -primary-color;
+    -fx-text-fill: -text-bright;
 }
 
 .nav-button.selected:hover {
-    -fx-background-color: derive(-bg-hover, 5%);
+    -fx-background-color: -primary-hover;
 }
 
 /* Content Area */
@@ -154,27 +153,30 @@
     -fx-border-color: transparent transparent -border-color transparent;
 }
 
+/* Page Headers - Updated */
 .page-title {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
+    -fx-text-fill: -text-bright;
+    -fx-fill: -text-bright;
 }
 
-/* Action Buttons - Enhanced */
+/* Action Buttons - Updated */
 .action-bar {
     -fx-padding: 0 0 20 0;
     -fx-spacing: 10;
 }
 
 .action-button {
-    -fx-background-color: #373e47;  /* GitHub button background */
-    -fx-text-fill: #cdd9e5;  /* GitHub button text */
+    -fx-background-color: -bg-lighter;
+    -fx-text-fill: -text-primary;
     -fx-padding: 8 16;
     -fx-font-family: 'Inter Medium';
     -fx-font-size: 13px;
     -fx-font-weight: 500;  /* Medium weight for buttons */
     -fx-graphic-text-gap: 8px;
     -fx-background-radius: 6px;
-    -fx-border-color: rgba(205, 217, 229, 0.1);  /* Subtle border */
+    -fx-border-color: rgba(192, 202, 245, 0.1);
     -fx-border-radius: 6px;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 1, 0, 0, 1);
@@ -182,27 +184,26 @@
 }
 
 .action-button:hover {
-    -fx-background-color: #444c56;  /* GitHub button hover */
-    -fx-border-color: rgba(205, 217, 229, 0.2);
+    -fx-background-color: -bg-hover;
+    -fx-border-color: rgba(192, 202, 245, 0.2);
 }
 
 .primary-button {
-    -fx-background-color: #2196f3;
-    -fx-text-fill: white;
+    -fx-background-color: -primary-color;
+    -fx-text-fill: -text-bright;
 }
 
 .primary-button:hover {
-    -fx-background-color: #1976d2;
+    -fx-background-color: -primary-hover;
 }
 
 .danger-button {
-    -fx-background-color: #f44336;
-    -fx-text-fill: white;
+    -fx-background-color: -danger-color;
+    -fx-text-fill: -text-bright;
 }
 
 .danger-button:hover {
-    -fx-background-color: #f85149;  /* GitHub red hover */
-    -fx-border-color: rgba(205, 217, 229, 0.2);
+    -fx-background-color: derive(-danger-color, 10%);
 }
 
 /* Action Icons - Enhanced */
@@ -254,7 +255,7 @@
 }
 
 .table-view .column-header .label {
-    -fx-text-fill: #e6edf3;  /* GitHub header text color */
+    -fx-text-fill: -text-white;
     -fx-font-family: 'Inter Medium';
     -fx-font-size: 12px;
     -fx-alignment: CENTER_LEFT;
@@ -285,7 +286,7 @@
 .table-view .table-cell {
     -fx-border-color: transparent;
     -fx-padding: 8px 16px;
-    -fx-text-fill: #adbac7;  /* GitHub cell text color */
+    -fx-text-fill: -text-primary;
     -fx-font-family: 'Inter';
     -fx-font-size: 14px;
     -fx-alignment: CENTER_LEFT;
@@ -321,7 +322,7 @@
 
 /* Table Selection Colors */
 .table-row-cell:filled:selected .table-cell {
-    -fx-text-fill: #e6edf3;  /* Brighter text for selected rows */
+    -fx-text-fill: -text-bright;
 }
 
 /* Table Focus */
@@ -338,14 +339,15 @@
     -fx-border-color: -border-color transparent transparent transparent;
 }
 
+/* Status Labels - Updated */
 .status-label {
-    -fx-text-fill: -text-secondary;
+    -fx-text-fill: -text-primary;
     -fx-font-size: 12px;
     -fx-font-weight: 400;  /* Regular weight */
 }
 
 .version-label {
-    -fx-text-fill: -text-secondary;
+    -fx-text-fill: -text-primary;
     -fx-font-size: 12px;
     -fx-font-weight: 400;
 }
@@ -364,7 +366,7 @@
 .dialog-pane .header-panel .label {
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-text-fill: -text-white;
+    -fx-text-fill: -text-bright;
 }
 
 .dialog-pane .content {
@@ -401,13 +403,13 @@
 .price-label {
     -fx-font-family: 'Inter SemiBold';
     -fx-font-size: 16px;
-    -fx-text-fill: #2ea043;  /* GitHub green */
+    -fx-text-fill: -success-color;
 }
 
 .total-label {
     -fx-font-family: 'Inter Bold';
     -fx-font-size: 18px;
-    -fx-text-fill: #2ea043;  /* GitHub green */
+    -fx-text-fill: -success-color;
 }
 
 .dialog-pane .label {
@@ -415,14 +417,14 @@
 }
 
 .dialog-pane .button {
-    -fx-background-color: #238636;  /* GitHub green button */
-    -fx-text-fill: white;
+    -fx-background-color: -primary-color;
+    -fx-text-fill: -text-bright;
     -fx-font-family: 'Inter Medium';
     -fx-cursor: hand;
 }
 
 .dialog-pane .button:hover {
-    -fx-background-color: #2ea043;
+    -fx-background-color: -primary-hover;
 }
 
 .dialog-pane .combo-box {
@@ -464,11 +466,22 @@
 }
 
 .error-label {
-    -fx-text-fill: #f44336;
+    -fx-text-fill: -danger-color;
     -fx-font-size: 12px;
 }
 
 .filter-combo {
     -fx-pref-width: 120px;
     -fx-min-height: 30px;
+}
+
+/* Form Controls - Updated */
+.text-field, .combo-box {
+    -fx-background-color: -bg-dark;
+    -fx-text-fill: -text-primary;
+    -fx-prompt-text-fill: -text-secondary;
+}
+
+.text-field:focused, .combo-box:focused {
+    -fx-border-color: -primary-color;
 } 

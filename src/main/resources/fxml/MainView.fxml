@@ -4,8 +4,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Text?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
@@ -55,37 +53,36 @@
                         <FontIcon iconLiteral="fas-users"/>
                     </graphic>
                 </Button>
-                
                 <Button fx:id="paymentsButton" text="Payments" onAction="#showPayments" styleClass="nav-button">
                     <graphic>
                         <FontIcon iconLiteral="fas-dollar-sign"/>
                     </graphic>
                 </Button>
-                
                 <Button fx:id="scheduleButton" text="Schedule" onAction="#showSchedule" styleClass="nav-button">
                     <graphic>
                         <FontIcon iconLiteral="fas-calendar"/>
                     </graphic>
                 </Button>
-                
                 <Button fx:id="enrollmentsButton" text="Enrollments" onAction="#showEnrollments" styleClass="nav-button">
                     <graphic>
                         <FontIcon iconLiteral="fas-graduation-cap"/>
                     </graphic>
                 </Button>
-                
+                <Button fx:id="coursesButton" text="Courses" onAction="#showCourses" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-music"/>
+                    </graphic>
+                </Button>
                 <Button fx:id="roomsButton" text="Rooms" onAction="#showRooms" styleClass="nav-button">
                     <graphic>
                         <FontIcon iconLiteral="fas-door-open"/>
                     </graphic>
                 </Button>
-                
                 <Button fx:id="profileButton" text="Profile" onAction="#showProfile" styleClass="nav-button">
                     <graphic>
                         <FontIcon iconLiteral="fas-user"/>
                     </graphic>
                 </Button>
-                
                 <Button fx:id="settingsButton" text="Settings" onAction="#showSettings" styleClass="nav-button">
                     <graphic>
                         <FontIcon iconLiteral="fas-cog"/>
@@ -133,7 +130,7 @@
                 
                 <HBox styleClass="action-bar">
                     <Button text="Enroll in Course" onAction="#showEnrollmentDialog" 
-                            styleClass="action-button,primary-button">
+                            styleClass="action-button primary-button">
                         <graphic>
                             <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
                         </graphic>
@@ -160,7 +157,7 @@
                 
                 <HBox styleClass="action-bar">
                     <Button text="Book Room" onAction="#showRoomBookingDialog" 
-                            styleClass="action-button,primary-button">
+                            styleClass="action-button primary-button">
                         <graphic>
                             <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
                         </graphic>
@@ -189,6 +186,11 @@
                 <fx:include fx:id="profile" source="ProfileView.fxml"/>
             </VBox>
 
+            <!-- Courses Content -->
+            <VBox fx:id="coursesContent" styleClass="content-container" visible="false">
+                <fx:include fx:id="coursesView" source="CourseView.fxml"/>
+            </VBox>
+
             <!-- Payments Content -->
             <VBox fx:id="paymentsContent" styleClass="content-container" visible="false">
                 <HBox styleClass="page-header">
@@ -197,7 +199,7 @@
                 
                 <HBox styleClass="action-bar">
                     <Button text="New Payment" onAction="#showNewPaymentDialog" 
-                            styleClass="action-button,primary-button">
+                            styleClass="action-button primary-button">
                         <graphic>
                             <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
                         </graphic>
@@ -224,4 +226,4 @@
         </HBox>
     </bottom>
     
-</BorderPane> 
+</BorderPane>
