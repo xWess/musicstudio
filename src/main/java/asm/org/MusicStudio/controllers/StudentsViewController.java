@@ -109,7 +109,7 @@ public class StudentsViewController {
     public void setCurrentTeacherId(int teacherId) {
         System.out.println("Setting teacher ID to: " + teacherId);
         this.currentTeacherId = teacherId;
-        loadStudents();
+        loadCourseFilter();  // This is where it starts failing
     }
 
     private void loadStudents() {

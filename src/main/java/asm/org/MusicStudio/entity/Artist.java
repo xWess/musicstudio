@@ -2,20 +2,22 @@ package asm.org.MusicStudio.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
+@Data
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
 public class Artist extends User {
+    @Builder.Default
     private List<Room> bookedRooms = new ArrayList<>();
 
     public Artist() {
         super();
-        setRole(Role.ARTIST);
-    }
-
-    public Artist(Integer id, String name, String email) {
-        super();
-        setId(id);
-        setName(name);
-        setEmail(email);
         setRole(Role.ARTIST);
         this.bookedRooms = new ArrayList<>();
     }

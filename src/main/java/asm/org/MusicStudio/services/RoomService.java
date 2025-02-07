@@ -1,11 +1,10 @@
 package asm.org.MusicStudio.services;
 
-import asm.org.MusicStudio.entity.Room;
-import asm.org.MusicStudio.entity.Artist;
-import asm.org.MusicStudio.entity.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+
+import asm.org.MusicStudio.entity.Room;
 
 public interface RoomService {
     
@@ -17,28 +16,43 @@ public interface RoomService {
     List<Room> getAvailableRooms(LocalDate date);
     
     /**
-     * Books a room for an artist
-     * @param artist The booking artist
-     * @param room The room to book
+     * Books a room for a user
+     * @param roomId The room ID
+     * @param userId The user ID
      * @param date The booking date
      * @param startTime Start time
      * @param endTime End time
      */
-    void bookRoom(Artist artist, Room room, LocalDate date, 
+    void bookRoom(int roomId, int userId, LocalDate date, 
             LocalTime startTime, LocalTime endTime);
     
     /**
-     * Cancels a room booking
-     * @param artist The artist who booked
-     * @param room The booked room
-     * @param schedule The schedule to cancel
+     * Cancels a booking
+     * @param bookingId The booking ID
      */
-    void cancelBooking(Artist artist, Room room, Schedule schedule);
+    void cancelBooking(int bookingId);
     
     /**
-     * Gets room details including equipment
+     * Checks if a room is available for booking
+     * @param roomId The room ID
+     * @param date The booking date
+     * @param startTime Start time
+     * @param endTime End time
+     * @return true if room is available, false otherwise
+     */
+    boolean isRoomAvailable(int roomId, LocalDate date, LocalTime startTime, LocalTime endTime);
+    
+    /**
+     * Gets room details
      * @param roomId The room ID
      * @return Room details
      */
     Room getRoomDetails(Long roomId);
+    
+    /**
+     * Gets booking history for a user
+     * @param userId The user ID
+     * @return List of room bookings
+     */
+    List<Room> getRoomBookingHistory(int userId);
 } 

@@ -12,7 +12,6 @@ import asm.org.MusicStudio.entity.Artist;
 import asm.org.MusicStudio.entity.Course;
 import asm.org.MusicStudio.entity.Payment;
 import asm.org.MusicStudio.entity.Role;
-import asm.org.MusicStudio.entity.Schedule;
 import asm.org.MusicStudio.entity.Student;
 import asm.org.MusicStudio.entity.Teacher;
 import asm.org.MusicStudio.entity.User;
@@ -693,7 +692,7 @@ public class MainController {
                         course.getName(),
                         months,
                         course.getSchedule(),
-                        course.getInstructor()));
+                        course.getTeacher() != null ? course.getTeacher().getName() : "No teacher assigned"));
     }
 
     @FXML
@@ -824,7 +823,7 @@ public class MainController {
             } else {
                 setText(String.format("%s with %s - $%.2f/month",
                         course.getName(),
-                        course.getInstructor(),
+                        course.getTeacher() != null ? course.getTeacher().getName() : "No teacher assigned",
                         course.getMonthlyFee()));
             }
         }
@@ -859,7 +858,7 @@ public class MainController {
             // Update status
             statusLabel.setText("Enrollments loaded successfully");
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             showError("Error", "Failed to load enrollments: " + e.getMessage());
         }
@@ -934,7 +933,15 @@ public class MainController {
 
     @FXML
     public void showRoomsView() {
-        loadView("/fxml/RoomView.fxml", roomsButton);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RoomView.fxml"));
+            Node roomView = loader.load();
+            RoomViewController controller = loader.getController();
+            
+            contentArea.getChildren().setAll(roomView);
+        } catch (IOException e) {
+            showError("Error", "Failed to load rooms view: " + e.getMessage());
+        }
     }
 
     @FXML

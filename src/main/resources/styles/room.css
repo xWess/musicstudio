@@ -1,0 +1,27 @@
+.room-table {
+    -fx-background-color: white;
+}
+
+.room-header {
+    -fx-padding: 10;
+    -fx-background-color: #f5f5f5;
+}
+
+.room-action-bar {
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+.room-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-padding: 8 15;
+}
+
+.room-button:hover {
+    -fx-background-color: #45a049;
+}
+
+.room-datepicker {
+    -fx-pref-width: 150;
+} 

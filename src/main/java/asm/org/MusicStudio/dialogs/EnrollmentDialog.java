@@ -2,6 +2,8 @@ package asm.org.MusicStudio.dialogs;
 
 import asm.org.MusicStudio.entity.Enrollment;
 import asm.org.MusicStudio.entity.Course;
+import asm.org.MusicStudio.entity.User;
+import asm.org.MusicStudio.entity.Role;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -56,10 +58,16 @@ public class EnrollmentDialog extends Dialog<Enrollment> {
         
         setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
+                String selectedCourseName = courseComboBox.getValue();
+                String selectedInstructor = instructorField.getText();
+                
+                User teacher = new User();
+                teacher.setName(selectedInstructor);
+                teacher.setRole(Role.TEACHER);
+
                 Course course = Course.builder()
-                    .name(courseComboBox.getValue())
-                    .instructor(instructorField.getText())
-                    .schedule(scheduleField.getText())
+                    .name(selectedCourseName)
+                    .teacher(teacher)
                     .build();
 
                 return Enrollment.builder()

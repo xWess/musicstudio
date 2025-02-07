@@ -43,7 +43,8 @@ public class Schedule {
     }
 
     public StringProperty teacherProperty() {
-        teacherProperty.set(course != null ? course.getInstructor() : "");
+        teacherProperty.set(course != null && course.getTeacher() != null ? 
+            course.getTeacher().getName() : "");
         return teacherProperty;
     }
 
@@ -67,7 +68,8 @@ public class Schedule {
         this.course = course;
         if (course != null) {
             courseProperty.set(course.getName());
-            teacherProperty.set(course.getInstructor());
+            teacherProperty.set(course.getTeacher() != null ? 
+                course.getTeacher().getName() : "");
         }
     }
 
@@ -129,5 +131,12 @@ public class Schedule {
     // Helper method to check if schedule is for given date
     public boolean isForDate(LocalDate otherDate) {
         return date != null && date.equals(otherDate);
+    }
+
+    public boolean isActive(LocalDate date, LocalTime time) {
+        return this.date != null && date != null &&
+               this.date.equals(date) && 
+               !time.isBefore(startTime) && 
+               !time.isAfter(endTime);
     }
 }

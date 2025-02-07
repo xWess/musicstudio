@@ -1,10 +1,20 @@
 package asm.org.MusicStudio.entity;
 
-import javafx.beans.property.*;
 import java.time.LocalDateTime;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 @Data
+@SuperBuilder
 public class User {
     public User() {
         this.idProperty.set(0);
@@ -94,5 +104,9 @@ public class User {
     public LocalDateTime getResetTokenExpiry() { return resetTokenExpiry.get(); }
     public void setResetTokenExpiry(LocalDateTime expiry) { 
         this.resetTokenExpiry.set(expiry); 
+    }
+
+    public String getUsername() {
+        return getName(); // Use the proper getter instead of direct field access
     }
 } 

@@ -1,151 +1,111 @@
 package asm.org.MusicStudio.dialogs;
 
+import java.time.LocalDate;
+import java.util.List;
 import asm.org.MusicStudio.entity.Room;
-import asm.org.MusicStudio.entity.Schedule;
+import asm.org.MusicStudio.services.RoomService;
+import asm.org.MusicStudio.services.RoomServiceImpl;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
 public class RoomBookingDialog extends Dialog<Room> {
-    private TextField locationField;
-    private Spinner<Integer> capacitySpinner;
-    private DatePicker datePicker;
-    private ComboBox<LocalTime> timeSlotComboBox;
-    private TextArea equipmentArea;
+    private ComboBox<Room> roomComboBox;
+    private ComboBox<String> timeSlotComboBox;
+    private final RoomService roomService;
+    private LocalDate selectedDate;
 
     public RoomBookingDialog(LocalDate selectedDate) {
-        setTitle("Book a Room");
-        setHeaderText("Please enter room booking details");
-
-        // Create form controls
-        setupControls(selectedDate);
-
-        // Create layout
-        GridPane grid = createLayout();
-        getDialogPane().setContent(grid);
-
-        // Add buttons
-        ButtonType bookButton = new ButtonType("Book", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(bookButton, ButtonType.CANCEL);
-
-        // Enable/Disable book button based on form validation
-        Node bookButtonNode = getDialogPane().lookupButton(bookButton);
-        bookButtonNode.setDisable(true);
-
-        // Add validation listeners
-        setupValidation(bookButtonNode);
-
-        // Convert the result
-        setResultConverter(dialogButton -> {
-            if (dialogButton == bookButton) {
-                Room room = Room.builder()
-                    .location(locationField.getText())
-                    .capacity(capacitySpinner.getValue())
-                    .build();
-
-                Schedule schedule = new Schedule();
-                schedule.setDate(datePicker.getValue());
-                schedule.setTime(timeSlotComboBox.getValue().toString());
-                room.addSchedule(schedule);
-
-                return room;
-            }
-            return null;
-        });
-    }
-
-    private void setupControls(LocalDate selectedDate) {
-        locationField = new TextField();
+        this.selectedDate = selectedDate;
+        this.roomService = new RoomServiceImpl();
         
-        SpinnerValueFactory<Integer> valueFactory = 
-            new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 50, 1);
-        capacitySpinner = new Spinner<>();
-        capacitySpinner.setValueFactory(valueFactory);
-        capacitySpinner.setEditable(true);
-
-        datePicker = new DatePicker(selectedDate);
-        datePicker.setEditable(false);
-        // Prevent selecting dates before today
-        datePicker.setDayCellFactory(picker -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                setDisable(empty || date.isBefore(LocalDate.now()));
-            }
-        });
-
-        timeSlotComboBox = new ComboBox<>();
-        LocalTime startTime = LocalTime.of(9, 0); // 9 AM
-        LocalTime endTime = LocalTime.of(21, 0);  // 9 PM
-        while (startTime.isBefore(endTime)) {
-            timeSlotComboBox.getItems().add(startTime);
-            startTime = startTime.plusHours(1);
-        }
-
-        timeSlotComboBox.setConverter(new StringConverter<LocalTime>() {
-            @Override
-            public String toString(LocalTime time) {
-                if (time == null) return "";
-                return time.toString();
-            }
-
-            @Override
-            public LocalTime fromString(String string) {
-                if (string == null || string.isEmpty()) return null;
-                return LocalTime.parse(string);
-            }
-        });
-
-        // Equipment TextArea
-        equipmentArea = new TextArea();
-        equipmentArea.setPrefRowCount(3);
-        equipmentArea.setWrapText(true);
-    }
-
-    private GridPane createLayout() {
+        setTitle("Book Room");
+        setHeaderText("Book a Practice Room");
+        
+        // Create the grid for form layout
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        grid.add(new Label("Location:"), 0, 0);
-        grid.add(locationField, 1, 0);
-        grid.add(new Label("Capacity:"), 0, 1);
-        grid.add(capacitySpinner, 1, 1);
-        grid.add(new Label("Date:"), 0, 2);
-        grid.add(datePicker, 1, 2);
-        grid.add(new Label("Time Slot:"), 0, 3);
-        grid.add(timeSlotComboBox, 1, 3);
-        grid.add(new Label("Equipment Needed:"), 0, 4);
-        grid.add(equipmentArea, 1, 4);
+        // Room selection
+        roomComboBox = new ComboBox<>();
+        roomComboBox.setPromptText("Select a room");
+        roomComboBox.setConverter(new StringConverter<Room>() {
+            @Override
+            public String toString(Room room) {
+                if (room == null) return "";
+                return String.format("ID: %d - Room %s (Capacity: %d)", 
+                    room.getId(),
+                    room.getLocation(), 
+                    room.getCapacity());
+            }
 
-        return grid;
-    }
+            @Override
+            public Room fromString(String string) {
+                return null;
+            }
+        });
 
-    private void setupValidation(Node bookButton) {
-        // Add listeners to enable/disable the book button
-        locationField.textProperty().addListener((obs, oldVal, newVal) -> 
-            validateForm(bookButton));
-        capacitySpinner.valueProperty().addListener((obs, oldVal, newVal) -> 
-            validateForm(bookButton));
-        datePicker.valueProperty().addListener((obs, oldVal, newVal) -> 
-            validateForm(bookButton));
+        // Time slot selection
+        timeSlotComboBox = new ComboBox<>();
+        timeSlotComboBox.setPromptText("Select time slot");
+        timeSlotComboBox.getItems().addAll(
+            "09:00-10:00",
+            "10:00-11:00",
+            "11:00-12:00",
+            "13:00-14:00",
+            "14:00-15:00",
+            "15:00-16:00",
+            "16:00-17:00",
+            "17:00-18:00"
+        );
+
+        // Add form elements to grid
+        grid.add(new Label("Room:"), 0, 0);
+        grid.add(roomComboBox, 1, 0);
+        grid.add(new Label("Time:"), 0, 1);
+        grid.add(timeSlotComboBox, 1, 1);
+
+        // Load available rooms
+        try {
+            List<Room> rooms = roomService.getAvailableRooms(selectedDate);
+            roomComboBox.setItems(FXCollections.observableArrayList(rooms));
+        } catch (Exception e) {
+            setHeaderText("Error loading rooms: " + e.getMessage());
+        }
+
+        getDialogPane().setContent(grid);
+        getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // Get the OK button
+        Button okButton = (Button) getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(true); // Initially disable OK button
+
+        // Add listeners to enable/disable OK button
+        roomComboBox.valueProperty().addListener((obs, oldVal, newVal) -> 
+            validateInput(okButton));
         timeSlotComboBox.valueProperty().addListener((obs, oldVal, newVal) -> 
-            validateForm(bookButton));
+            validateInput(okButton));
+
+        setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                Room selectedRoom = roomComboBox.getValue();
+                if (selectedRoom != null) {
+                    selectedRoom.setDate(selectedDate);
+                    selectedRoom.setTimeSlot(timeSlotComboBox.getValue());
+                    return selectedRoom;
+                }
+            }
+            return null;
+        });
     }
 
-    private void validateForm(Node bookButton) {
-        boolean isValid = !locationField.getText().isEmpty() &&
-                         capacitySpinner.getValue() != null &&
-                         capacitySpinner.getValue() > 0 &&
-                         datePicker.getValue() != null &&
-                         !datePicker.getValue().isBefore(LocalDate.now()) &&
+    private void validateInput(Button okButton) {
+        boolean isValid = roomComboBox.getValue() != null && 
                          timeSlotComboBox.getValue() != null;
-        
-        bookButton.setDisable(!isValid);
+        okButton.setDisable(!isValid);
     }
 } 

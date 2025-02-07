@@ -67,10 +67,15 @@ public class EnrollmentDAO {
                 student.setEmail(studentEmail);
                 student.setRole(Role.STUDENT);
                 
+                // Create teacher object from result set
+                User teacher = new User();
+                teacher.setId(rs.getInt("teacher_id"));
+                teacher.setRole(Role.TEACHER);
+                
                 Course course = Course.builder()
-                    .id(courseId)
-                    .name(courseName)
-                    .teacherId(rs.getInt("teacher_id"))
+                    .id(rs.getInt("course_id"))
+                    .name(rs.getString("course_name"))
+                    .teacher(teacher)  // Pass the teacher object
                     .build();
                 
                 Enrollment enrollment = Enrollment.builder()

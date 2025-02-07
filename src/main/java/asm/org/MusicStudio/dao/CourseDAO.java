@@ -1,11 +1,16 @@
 package asm.org.MusicStudio.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.List;
+
 import asm.org.MusicStudio.db.DatabaseConnection;
 import asm.org.MusicStudio.entity.Course;
 import asm.org.MusicStudio.entity.User;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class CourseDAO {
     
@@ -27,29 +32,20 @@ public class CourseDAO {
              ResultSet rs = pstmt.executeQuery()) {
             
             while (rs.next()) {
-                String schedule;
-                Time startTime = rs.getTime("start_time");
-                Time endTime = rs.getTime("end_time");
-                String dayOfWeek = rs.getString("day_of_week");
-                String location = rs.getString("location");
+                String schedule = formatSchedule(rs);
                 
-                if (startTime != null && endTime != null && dayOfWeek != null && location != null) {
-                    schedule = String.format("%s %s-%s (%s)",
-                        dayOfWeek,
-                        startTime.toLocalTime().toString(),
-                        endTime.toLocalTime().toString(),
-                        location);
-                } else {
-                    schedule = "Schedule to be announced";
-                }
-                    
+                User teacher = new User();
+                teacher.setId(rs.getInt("teacher_id"));
+                teacher.setName(rs.getString("teacher_name"));
+                
                 Course course = Course.builder()
                     .id(rs.getInt("id"))
                     .name(rs.getString("name"))
-                    .description(rs.getString("name") + " with " + rs.getString("teacher_name"))
-                    .monthlyFee(80.00) // Default fee since it's not in DB yet
-                    .instructor(rs.getString("teacher_name"))
-                    .maxStudents(20) // Default capacity
+                    .teacher(teacher)
+                    .description(rs.getString("description"))
+                    .monthlyFee(rs.getDouble("monthly_fee"))
+                    .maxStudents(rs.getInt("max_students"))
+                    .enrolledCount(rs.getInt("enrolled_count"))
                     .schedule(schedule)
                     .build();
                     
@@ -77,10 +73,14 @@ public class CourseDAO {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
+                    User teacher = new User();
+                    teacher.setId(rs.getInt("teacher_id"));
+                    teacher.setName(rs.getString("teacher_name"));
+                    
                     Course course = Course.builder()
                         .id(rs.getInt("id"))
                         .name(rs.getString("name"))
-                        .teacherId(teacherId)
+                        .teacher(teacher)
                         .enrolledCount(rs.getInt("enrolled_count"))
                         .build();
                     courses.add(course);
@@ -95,15 +95,9 @@ public class CourseDAO {
         List<Course> courses = new ArrayList<>();
         String sql = """
             SELECT c.*, u.name as teacher_name, u.email as teacher_email,
-                   s.id as schedule_id, s.day_of_week, s.start_time, s.end_time,
-                   r.id as room_id, r.location,
-                   u2.name as booked_by_name,
                    (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) as enrolled_count
             FROM courses c
             LEFT JOIN users u ON c.teacher_id = u.id
-            LEFT JOIN schedules s ON c.id = s.course_id
-            LEFT JOIN rooms r ON s.room_id = r.id
-            LEFT JOIN users u2 ON s.booked_by = u2.id
             WHERE c.teacher_id = ?
         """;
         
@@ -115,20 +109,15 @@ public class CourseDAO {
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                String schedule = formatSchedule(rs);
-                System.out.println("CourseDAO: Found course with schedule: " + schedule);
-                
-                User teacher = new User();  // Create User object using no-args constructor
-                teacher.setId(teacherId);
+                User teacher = new User();
+                teacher.setId(rs.getInt("teacher_id"));
                 teacher.setName(rs.getString("teacher_name"));
                 teacher.setEmail(rs.getString("teacher_email"));
                 
                 Course course = Course.builder()
                     .id(rs.getInt("id"))
                     .name(rs.getString("name"))
-                    .teacher(teacher)  // Use the properly constructed User object
-                    .schedule(schedule)
-                    .teacherId(teacherId)
+                    .teacher(teacher)
                     .description(rs.getString("description"))
                     .monthlyFee(rs.getDouble("monthly_fee"))
                     .maxStudents(rs.getInt("max_students"))

@@ -17,7 +17,6 @@ public class Course {
     private String name;
     private User teacher;
     private String schedule;
-    private Integer teacherId;
     private String description;
     private Double monthlyFee;
     private Integer maxStudents;
@@ -34,8 +33,12 @@ public class Course {
         enrollments.remove(enrollment);
     }
 
-    public double getMonthlyFee() {
-        return monthlyFee;
+    public Integer getTeacherId() {
+        return teacher != null ? teacher.getId() : null;
+    }
+
+    public String getTeacherName() {
+        return teacher != null ? teacher.getName() : null;
     }
 
     @Override

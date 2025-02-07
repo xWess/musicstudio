@@ -58,7 +58,7 @@ public class ScheduleController {
 
     public void loadSchedule() {
         if (scheduleTable == null || scheduleService == null || currentUser == null) {
-            return; // Exit if not all dependencies are initialized
+            // Error handling
         }
 
         try {
