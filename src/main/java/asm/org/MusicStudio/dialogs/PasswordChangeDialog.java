@@ -7,9 +7,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.Node;
 
 public class PasswordChangeDialog extends Dialog<ButtonType> {
-    private final PasswordField currentPasswordField;
-    private final PasswordField newPasswordField;
-    private final PasswordField confirmPasswordField;
+    private PasswordField currentPasswordField;
+    private PasswordField newPasswordField;
+    private PasswordField confirmPasswordField;
 
     public PasswordChangeDialog(User user) {
         setTitle("Change Password");
@@ -65,7 +65,6 @@ public class PasswordChangeDialog extends Dialog<ButtonType> {
         changeButton.setDisable(fieldsEmpty || !passwordsMatch);
     }
 
-    // Getter methods
     public String getCurrentPassword() {
         return currentPasswordField.getText();
     }

@@ -6,11 +6,8 @@ import asm.org.MusicStudio.dao.CourseDAO;
 import asm.org.MusicStudio.entity.Payment;
 import asm.org.MusicStudio.entity.User;
 import asm.org.MusicStudio.entity.Course;
-import asm.org.MusicStudio.entity.Enrollment;
-
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -25,38 +22,23 @@ public class PaymentService {
         this.courseDAO = new CourseDAO();
     }
 
-    public Payment createPayment(Payment payment) throws SQLException {
-        payment.setPaymentDate(LocalDateTime.now());
-        payment.setStatus("PENDING");
+    public Payment processEnrollmentPayment(User user, Course course, int months) throws SQLException {
+        BigDecimal totalAmount = BigDecimal.valueOf(course.getMonthlyFee()).multiply(BigDecimal.valueOf(months));
+        
+        Payment payment = Payment.builder()
+            .user(user)
+            .courseId(course.getId())
+            .description(String.format("Enrollment in %s for %d months", course.getName(), months))
+            .amount(totalAmount)
+            .paymentDate(LocalDateTime.now())
+            .status("COMPLETED")  // Changed from PENDING since we're not using Stripe
+            .build();
+        
         return paymentDAO.save(payment);
     }
 
     public List<Payment> getUserPayments(User user) throws SQLException {
         return paymentDAO.findByUserId(user.getId());
-    }
-
-    public Payment updatePaymentStatus(Long paymentId, String status) throws SQLException {
-        Payment payment = paymentDAO.findById(paymentId);
-        if (payment == null) {
-            throw new IllegalArgumentException("Payment not found with id: " + paymentId);
-        }
-        payment.setStatus(status);
-        return paymentDAO.update(payment);
-    }
-
-    public Payment processEnrollmentPayment(User user, Course course, int months) throws SQLException {
-        BigDecimal monthlyFee = BigDecimal.valueOf(course.getMonthlyFee());
-        BigDecimal totalAmount = monthlyFee.multiply(BigDecimal.valueOf(months));
-        LocalDateTime startDate = LocalDateTime.now();
-        
-        Payment payment = Payment.builder()
-            .user(user)
-            .description(String.format("Enrollment in %s for %d months", course.getName(), months))
-            .amount(totalAmount)
-            .courseId(course.getId())
-            .build();
-        
-        return paymentDAO.saveEnrollmentPayment(payment, startDate);
     }
 
     public List<Course> getAvailableCourses() throws SQLException {
