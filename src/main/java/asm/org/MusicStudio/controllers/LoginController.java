@@ -142,18 +142,21 @@ public class LoginController {
     
     private void openMainWindow(User user) {
         try {
-            // Load the FXML
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/fxml/MainView.fxml"));
+            if (user == null) {
+                System.out.println("Error: Attempting to open main window with null user");
+                return;
+            }
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
             Parent root = loader.load();
             
-            // Get the controller and initialize it
             MainController controller = loader.getController();
             if (controller == null) {
                 throw new IllegalStateException("Failed to get MainController");
             }
             
-            // Set up the controller
+            // Set the user before initializing data
+            System.out.println("Setting user in MainController: " + user.getName());
             controller.setCurrentUser(user);
             controller.initializeData();
             
@@ -172,14 +175,8 @@ public class LoginController {
             mainStage.show();
             
         } catch (IOException e) {
-            e.printStackTrace(); // Print the full stack trace
-            showError("Application Error", 
-                     "Failed to load main window: " + e.getMessage() + 
-                     "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown"));
-        } catch (Exception e) {
             e.printStackTrace();
-            showError("Application Error", 
-                     "Unexpected error: " + e.getMessage());
+            showError("Application Error", "Failed to load main window: " + e.getMessage());
         }
     }
     

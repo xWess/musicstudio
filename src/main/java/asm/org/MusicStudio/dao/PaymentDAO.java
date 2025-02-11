@@ -9,6 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class PaymentDAO {
     
@@ -44,17 +45,17 @@ public class PaymentDAO {
     }
     
     public Payment save(Payment payment) throws SQLException {
-        String sql = "INSERT INTO payments (user_id, description, amount, payment_date, status) " +
+        String sql = "INSERT INTO payments (user_id, amount, payment_date, status, description) " +
                     "VALUES (?, ?, ?, ?, ?) RETURNING id";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, payment.getUser().getId());
-            pstmt.setString(2, payment.getDescription());
-            pstmt.setBigDecimal(3, payment.getAmount());
-            pstmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
-            pstmt.setString(5, "PENDING");
+            pstmt.setBigDecimal(2, payment.getAmount());
+            pstmt.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            pstmt.setString(4, "PENDING");
+            pstmt.setString(5, payment.getDescription());
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -62,10 +63,7 @@ public class PaymentDAO {
                     return payment;
                 }
             }
-        } catch (SQLException e) {
-            throw new SQLException("Error saving payment: " + e.getMessage(), e);
         }
-        
         throw new SQLException("Failed to save payment");
     }
 
@@ -158,42 +156,37 @@ public class PaymentDAO {
         }
     }
 
-    public Payment saveEnrollmentPayment(Payment payment, LocalDateTime startDate) throws SQLException {
+    public Payment processEnrollmentPayment(Payment payment, LocalDate startDate) throws SQLException {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getInstance().getConnection();
             conn.setAutoCommit(false);
             
-            // Save payment first
-            String paymentSql = "INSERT INTO payments (user_id, description, amount, payment_date, status) " +
-                               "VALUES (?, ?, ?, ?, ?) RETURNING id";
-            
+            // First insert payment
+            String paymentSql = "INSERT INTO payments (amount, payment_date, status) VALUES (?, ?, ?) RETURNING id";
             Long paymentId;
+            
             try (PreparedStatement pstmt = conn.prepareStatement(paymentSql)) {
-                pstmt.setInt(1, payment.getUser().getId());
-                pstmt.setString(2, payment.getDescription());
-                pstmt.setBigDecimal(3, payment.getAmount());
-                pstmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
-                pstmt.setString(5, "PENDING");
+                pstmt.setDouble(1, payment.getAmount().doubleValue());
+                pstmt.setTimestamp(2, Timestamp.valueOf(payment.getPaymentDate()));
+                pstmt.setString(3, payment.getStatus());
                 
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (!rs.next()) {
                         throw new SQLException("Failed to create payment record");
                     }
-                    paymentId = rs.getLong("id");
+                    paymentId = rs.getLong(1);
                     payment.setId(paymentId);
                 }
             }
             
-            // Create enrollment with simple query
-            String enrollSql = "INSERT INTO enrollments (user_id, course_id, payment_id, start_date) " +
-                              "VALUES (?, ?, ?, ?)";
-            
+            // Then create enrollment
+            String enrollSql = "INSERT INTO enrollments (student_id, course_id, payment_id, start_date) VALUES (?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(enrollSql)) {
                 pstmt.setInt(1, payment.getUser().getId());
                 pstmt.setInt(2, payment.getCourseId());
                 pstmt.setLong(3, paymentId);
-                pstmt.setTimestamp(4, Timestamp.valueOf(startDate));
+                pstmt.setTimestamp(4, Timestamp.valueOf(startDate.atStartOfDay()));
                 
                 int rows = pstmt.executeUpdate();
                 if (rows != 1) {
@@ -203,25 +196,70 @@ public class PaymentDAO {
             
             conn.commit();
             return payment;
-            
         } catch (SQLException e) {
             if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+                conn.rollback();
             }
             throw new SQLException("Failed to process enrollment: " + e.getMessage(), e);
         } finally {
             if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                conn.setAutoCommit(true);
+                conn.close();
+            }
+        }
+    }
+    public Payment saveEnrollmentPayment(Payment payment, LocalDateTime startDate) throws SQLException {
+        String sql = "INSERT INTO payments (user_id, description, amount, payment_date, status) " +
+                    "VALUES (?, ?, ?, ?, ?) RETURNING id";
+                    
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, payment.getUser().getId());
+            pstmt.setString(2, payment.getDescription());
+            pstmt.setBigDecimal(3, payment.getAmount());
+            pstmt.setTimestamp(4, Timestamp.valueOf(startDate));
+            pstmt.setString(5, "PENDING");  
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    payment.setId(rs.getLong("id"));
+                    return payment;
                 }
             }
         }
+        throw new SQLException("Failed to save enrollment payment");
+    }   
+
+    public List<Payment> findByUserIdAndStatus(Integer userId, String status) throws SQLException {
+        String sql = """
+            SELECT p.*, c.name as course_name 
+            FROM payments p
+            JOIN courses c ON p.course_id = c.id
+            WHERE p.student_id = ? AND p.status = ?
+            ORDER BY p.payment_date DESC
+        """;
+        
+        List<Payment> payments = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, userId);
+            pstmt.setString(2, status);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Payment payment = Payment.builder()
+                        .id(rs.getLong("id"))
+                        .courseId(rs.getInt("course_id"))
+                        .amount(rs.getBigDecimal("amount"))
+                        .paymentDate(rs.getTimestamp("payment_date").toLocalDateTime())
+                        .status(rs.getString("status"))
+                        .description(rs.getString("description"))
+                        .build();
+                    payments.add(payment);
+                }
+            }
+        }
+        return payments;
     }
 } 
