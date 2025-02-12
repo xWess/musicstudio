@@ -1,0 +1,2 @@
+ALTER TABLE course_files 
+ADD COLUMN file_size BIGINT NOT NULL DEFAULT 0; 

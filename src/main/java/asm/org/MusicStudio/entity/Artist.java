@@ -15,6 +15,8 @@ import lombok.Builder;
 public class Artist extends User {
     @Builder.Default
     private List<Room> bookedRooms = new ArrayList<>();
+    private String bio;
+    private String genre;
 
     public Artist() {
         super();

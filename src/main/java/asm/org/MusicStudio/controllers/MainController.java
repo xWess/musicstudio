@@ -127,6 +127,18 @@ public class MainController {
     @FXML
     private UserViewController usersViewController;
 
+    @FXML
+    private VBox filesContent;
+
+    @FXML
+    private Button filesButton;
+
+    @FXML
+    private Button fileManagementButton;
+
+    @FXML
+    private FileManagementController fileManagementController;
+
     private UserService userService;
     private PaymentService paymentService;
     private ScheduleService scheduleService;
@@ -427,6 +439,10 @@ public class MainController {
         if (profileContent != null) {
             profileContent.setVisible(false);
             profileContent.setManaged(false);
+        }
+        if (filesContent != null) {
+            filesContent.setVisible(false);
+            filesContent.setManaged(false);
         }
 
         // Clear any selections
@@ -1036,6 +1052,33 @@ public class MainController {
         } catch (Exception e) {
             e.printStackTrace();
             showError("Error", "Failed to load students view: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    public void showFileManagementView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/FileManagement.fxml"));
+            Node fileManagementView = loader.load();
+            
+            FileManagementController controller = loader.getController();
+            controller.setTeacherId(currentUser.getId());
+            
+            contentArea.getChildren().setAll(fileManagementView);
+            updateNavButtonStates(fileManagementButton);
+            
+        } catch (IOException e) {
+            showError("Error", "Failed to load file management view: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    public void showFiles() {
+        hideAllContent();
+        filesContent.setVisible(true);
+        if (fileManagementController != null && currentUser != null) {
+            fileManagementController.setTeacherId(currentUser.getId());
+            fileManagementController.initialize(); // Reinitialize the controller
         }
     }
 }

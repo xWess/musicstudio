@@ -104,6 +104,20 @@
                         <FontIcon iconLiteral="fas-cog"/>
                     </graphic>
                 </Button>
+                
+                <Button fx:id="fileManagementButton" 
+                        text="File Management" 
+                        onAction="#showFileManagementView"
+                        styleClass="nav-button"/>
+                
+                <Button fx:id="filesButton" text="Files" onAction="#showFiles" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-file"/>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="File Management"/>
+                    </tooltip>
+                </Button>
             </VBox>
         </VBox>
     </left>
@@ -230,6 +244,14 @@
             <!-- Students Content -->
             <VBox fx:id="studentsContent" styleClass="content-container" visible="false">
                 <fx:include fx:id="studentsView" source="StudentsView.fxml"/>
+            </VBox>
+
+            <!-- Files Content -->
+            <VBox fx:id="filesContent" styleClass="content-container" visible="false">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="File Management"/>
+                </HBox>
+                <fx:include fx:id="fileManagement" source="FileManagement.fxml"/>
             </VBox>
         </StackPane>
     </center>

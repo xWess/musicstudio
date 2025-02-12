@@ -15,14 +15,17 @@ import java.util.List;
 public class Course {
     private Integer id;
     private String name;
-    private User teacher;
-    private String schedule;
     private String description;
+    private User teacher;
     private Double monthlyFee;
     private Integer maxStudents;
     private Integer enrolledCount;
+    private String schedule;
+    private String status;
     @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
+    private int teacherId;
+    private boolean active;
 
     // Helper methods
     public void addEnrollment(Enrollment enrollment) {
