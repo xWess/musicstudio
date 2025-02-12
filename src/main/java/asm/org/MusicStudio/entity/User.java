@@ -11,22 +11,26 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
-    public User() {
-        this.idProperty.set(0);
-        this.nameProperty.set("");
-        this.emailProperty.set("");
-        this.roleProperty.set(Role.STUDENT);
-        this.passwordProperty.set("");
-        this.saltProperty.set("");
-        this.activeProperty.set(true);
-        this.lastLoginProperty.set(LocalDateTime.now());
-        this.resetToken.set("");
-        this.resetTokenExpiry.set(null);
+    private Integer id;
+    private String name;
+    private String email;
+    private String password;
+    private String role;
+    private boolean active;
+    private LocalDateTime lastLogin;
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     private final IntegerProperty idProperty = new SimpleIntegerProperty();

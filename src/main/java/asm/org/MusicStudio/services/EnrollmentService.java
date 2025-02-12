@@ -40,10 +40,18 @@ public class EnrollmentService {
      * @param enrollment The enrollment details
      */
     public void enrollInCourse(Enrollment enrollment) {
-        //TODO: Implement enrollment creation in database
-        //TODO: Validate course capacity
-        //TODO: Check for schedule conflicts
-        //TODO: Update course availability
+        try {
+            // Validate course capacity
+            if (!checkCourseAvailability(enrollment.getCourse().getId().longValue())) {
+                throw new RuntimeException("Course is at full capacity");
+            }
+            
+            // Create enrollment record
+            enrollmentDAO.save(enrollment);
+            
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to enroll in course: " + e.getMessage(), e);
+        }
     }
     
     /**
@@ -51,10 +59,11 @@ public class EnrollmentService {
      * @param enrollmentId The ID of the enrollment to cancel
      */
     public void cancelEnrollment(Long enrollmentId) {
-        //TODO: Implement enrollment cancellation
-        //TODO: Update course availability
-        //TODO: Apply cancellation policies
-        //TODO: Record cancellation reason
+        try {
+            enrollmentDAO.deleteEnrollmentById(enrollmentId.intValue());
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to cancel enrollment: " + e.getMessage(), e);
+        }
     }
     
     /**
@@ -63,10 +72,20 @@ public class EnrollmentService {
      * @return boolean indicating availability
      */
     public boolean checkCourseAvailability(Long courseId) {
-        //TODO: Implement availability check
-        //TODO: Compare current enrollment count with capacity
-        //TODO: Consider waitlist status
-        return false;
+        try {
+            // Replace placeholder with actual capacity check
+            String sql = """
+                SELECT (c.max_students > (
+                    SELECT COUNT(*) FROM enrollments e 
+                    WHERE e.course_id = c.id AND e.status = 'ACTIVE'
+                )) as has_capacity
+                FROM courses c WHERE c.id = ?
+            """;
+            return enrollmentDAO.checkCourseAvailability(courseId.intValue());
+        } catch (Exception e) {
+            System.err.println("Error checking course availability: " + e.getMessage());
+            return false;
+        }
     }
     
     /**
@@ -75,11 +94,19 @@ public class EnrollmentService {
      * @return List of enrollments
      */
     public List<Enrollment> getStudentEnrollments(Student student) {
-        //TODO: Query enrollments table for student
-        //TODO: Join with courses table
-        //TODO: Join with payments table
-        //TODO: Filter active enrollments
-        return null;
+        try {
+            // Replace placeholder implementation
+            String sql = """
+                SELECT e.*, c.name as course_name, c.teacher_id
+                FROM enrollments e
+                JOIN courses c ON e.course_id = c.id
+                WHERE e.student_id = ?
+            """;
+            return enrollmentDAO.findByStudentId(student.getId());
+        } catch (SQLException e) {
+            System.err.println("Error fetching student enrollments: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
     
     /**
@@ -91,11 +118,17 @@ public class EnrollmentService {
      */
     public void createEnrollment(Student student, Course course, 
             LocalDate startDate, Payment payment) {
-        //TODO: Validate course capacity
-        //TODO: Check for schedule conflicts
-        //TODO: Create enrollment record
-        //TODO: Update course enrollments
-        //TODO: Process initial payment
+        try {
+            Enrollment enrollment = Enrollment.builder()
+                .student(student)
+                .course(course)
+                .status("ACTIVE")
+                .build();
+                
+            enrollmentDAO.createEnrollment(enrollment);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create enrollment: " + e.getMessage(), e);
+        }
     }
     
     /**
@@ -104,10 +137,12 @@ public class EnrollmentService {
      * @param newStatus New status
      */
     public void updateEnrollmentStatus(Enrollment enrollment, String newStatus) {
-        //TODO: Validate status transition
-        //TODO: Update enrollment record
-        //TODO: Update course capacity if needed
-        //TODO: Handle payment implications
+        try {
+            enrollment.setStatus(newStatus);
+            enrollmentDAO.updateEnrollment(enrollment);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update enrollment status: " + e.getMessage(), e);
+        }
     }
 
     public List<Enrollment> getEnrollmentsByTeacher(int teacherId) {

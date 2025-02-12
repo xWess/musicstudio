@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="asm.org.MusicStudio.controllers.FileManagementController"
+      styleClass="file-management-container"
+      stylesheets="@../styles/filemanagement.css">
+    
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <VBox styleClass="upload-section" spacing="10">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Select Course:"/>
+            <ComboBox fx:id="courseSelector" prefWidth="200"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="File Description:"/>
+            <TextArea fx:id="fileDescription" prefWidth="300" prefHeight="60"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button fx:id="uploadButton" text="Upload File" onAction="#handleUpload"/>
+            <Button text="Download File" onAction="#handleDownload"/>
+            <Button text="Delete File" onAction="#handleDelete"/>
+        </HBox>
+        <Label fx:id="statusLabel"/>
+    </VBox>
+
+    <TableView fx:id="fileTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="fileNameColumn" text="File Name" prefWidth="200"/>
+            <TableColumn fx:id="uploadDateColumn" text="Upload Date" prefWidth="150"/>
+            <TableColumn fx:id="fileTypeColumn" text="Type" prefWidth="80"/>
+            <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="200"/>
+            <TableColumn fx:id="fileSizeColumn" text="Size" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox> 
