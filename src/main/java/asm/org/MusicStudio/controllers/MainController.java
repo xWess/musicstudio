@@ -41,6 +41,8 @@ import javafx.scene.Scene;
 import asm.org.MusicStudio.services.ScheduleService;
 import asm.org.MusicStudio.entity.Schedule;
 import javafx.scene.layout.BorderPane;
+import asm.org.MusicStudio.services.CourseService;
+import asm.org.MusicStudio.services.RoomService;
 
 public class MainController {
     @FXML
@@ -291,25 +293,30 @@ public class MainController {
     @FXML
     private void showSchedule() {
         try {
-            if (scheduleService == null) {
-                throw new IllegalStateException("Schedule service not initialized");
-            }
-            
             hideAllContent();
-            if (scheduleContent != null) {
-                scheduleContent.setVisible(true);
-                scheduleContent.setManaged(true);
-            }
-            updateNavButtonStates(scheduleButton);
+            clearSelectedButtons();
             
-            // Load schedule data
-            LocalDate today = LocalDate.now();
-            List<Schedule> schedules = scheduleService.getSchedule(today, "DAILY");
-            // Update your schedule view with the data
+            // Load the ScheduleView
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ScheduleView.fxml"));
+            Node scheduleView = loader.load();
             
-        } catch (Exception e) {
+            // Get and configure the controller
+            ScheduleController scheduleController = loader.getController();
+            scheduleController.setScheduleService(ScheduleService.getInstance());
+            scheduleController.setCourseService(CourseService.getInstance());
+            scheduleController.setRoomService(RoomService.getInstance());
+            scheduleController.setCurrentUser(currentUser);
+            
+            // Add view to content area
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(scheduleView);
+            
+            // Update button state
+            scheduleButton.getStyleClass().add("selected");
+            
+        } catch (IOException e) {
             e.printStackTrace();
-            showError("Error", "Failed to load schedule: " + e.getMessage());
+            showError("Error", "Failed to load schedule view: " + e.getMessage());
         }
     }
 
@@ -718,14 +725,26 @@ public class MainController {
         System.out.println("Setting current user: " + user.getName());
         
         // Configure UI based on user role
+        if (coursesButton != null) {
+            // Allow both teachers and admins to manage courses
+            boolean canManageCourses = user.getRole() == Role.TEACHER || 
+                                     user.getRole() == Role.ADMIN;
+            coursesButton.setVisible(canManageCourses);
+            coursesButton.setManaged(canManageCourses);
+        }
+        
         if (user.getRole() != Role.ADMIN) {
             // Hide users view for non-admins
             if (usersButton != null) {
                 usersButton.setVisible(false);
                 usersButton.setManaged(false);
             }
-            // Show appropriate default view (e.g., schedule)
-            showSchedule();
+            // Show appropriate default view
+            if (user.getRole() == Role.TEACHER) {
+                showCourses(); // Show courses view for teachers
+            } else {
+                showSchedule(); // Show schedule for other roles
+            }
         } else {
             // Show users view for admin
             if (usersButton != null) {
@@ -746,17 +765,26 @@ public class MainController {
 
         // Hide/show navigation buttons based on role
         boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isTeacher = currentUser.getRole() == Role.TEACHER;
         
         if (usersButton != null) {
             usersButton.setVisible(isAdmin);
             usersButton.setManaged(isAdmin);
         }
+        
+        if (coursesButton != null) {
+            boolean canManageCourses = isAdmin || isTeacher;
+            coursesButton.setVisible(canManageCourses);
+            coursesButton.setManaged(canManageCourses);
+        }
 
         // Show appropriate default view based on role
         if (isAdmin) {
             showUsers();
+        } else if (isTeacher) {
+            showCourses();
         } else {
-            showSchedule(); // or any other appropriate default view
+            showSchedule();
         }
     }
 
@@ -942,6 +970,7 @@ public class MainController {
             profileViewController.saveProfileChanges();
         }
     }
+    
 
     @FXML
     public void showChangePasswordDialog() {
@@ -972,6 +1001,12 @@ public class MainController {
     @FXML
     private void showCourses() {
         try {
+            // Allow both students and teachers/admins to access courses
+            if (currentUser == null) {
+                showError("Access Denied", "Please log in to view courses.");
+                return;
+            }
+
             hideAllContent();
             if (coursesContent != null) {
                 coursesContent.setVisible(true);
@@ -980,15 +1015,15 @@ public class MainController {
             updateNavButtonStates(coursesButton);
             statusLabel.setText("Courses view loaded");
 
-            // Refresh the CourseViewController
+            // Load the CourseViewController with appropriate permissions
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CourseView.fxml"));
             Node courseView = loader.load();
-            CourseViewController courseViewController = loader.getController();
-            courseViewController.refreshView(); // Call refresh method
-
+            
+            CourseViewController controller = loader.getController();
+            controller.setCurrentUser(currentUser);
+            
             contentArea.getChildren().clear();
-            contentArea.getChildren().add(courseView); // Add the course view to the content area
-
+            contentArea.getChildren().add(courseView);
         } catch (Exception e) {
             e.printStackTrace();
             showError("Error", "Failed to load courses view: " + e.getMessage());

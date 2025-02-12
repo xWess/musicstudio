@@ -1,9 +1,11 @@
 package asm.org.MusicStudio.services;
 
+import asm.org.MusicStudio.db.DatabaseConnection;
 import asm.org.MusicStudio.entity.Schedule;
 import asm.org.MusicStudio.entity.Room;
 import asm.org.MusicStudio.entity.Course;
 import asm.org.MusicStudio.entity.Artist;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -11,58 +13,72 @@ import java.util.ArrayList;
 
 public class ScheduleService {
     
+    private static ScheduleService instance;
+    
+    public static ScheduleService getInstance() {
+        if (instance == null) {
+            instance = new ScheduleService();
+        }
+        return instance;
+    }
+    
     /**
      * Retrieves schedule based on date and view type
      * @param date The selected date
      * @param viewType The type of view (Daily/Weekly/Monthly)
      * @return List of schedules, never null
      */
-    public List<Schedule> getSchedule(LocalDate date, String viewType) {
-        if (date == null) {
-            throw new IllegalArgumentException("Date cannot be null");
-        }
-        
-        if (viewType == null || viewType.trim().isEmpty()) {
-            throw new IllegalArgumentException("View type cannot be null or empty");
-        }
-        
-        try {
-            // TODO: Replace this with actual database query
-            // For now, return empty list instead of null
-            return new ArrayList<>();
+    public List<Schedule> getSchedule(LocalDate date, String viewType) throws SQLException {
+        String sql = """
+            SELECT s.*, c.name as course_name, c.description,
+                   u.name as teacher_name,
+                   r.location as room_location, r.capacity
+            FROM schedules s
+            JOIN courses c ON s.course_id = c.id
+            JOIN users u ON c.teacher_id = u.id
+            JOIN rooms r ON s.room_id = r.id
+            WHERE s.status = 'ACTIVE'
+            AND s.day_of_week = ?
+            ORDER BY s.start_time""";
             
-            /* Implementation example for when database is ready:
-            LocalDate startDate;
-            LocalDate endDate;
+        List<Schedule> schedules = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            pstmt.setString(1, date.getDayOfWeek().toString());
             
-            switch(viewType.toUpperCase()) {
-                case "DAILY":
-                    startDate = date;
-                    endDate = date;
-                    break;
-                case "WEEKLY":
-                    startDate = date.with(DayOfWeek.MONDAY);
-                    endDate = startDate.plusDays(6);
-                    break;
-                case "MONTHLY":
-                    startDate = date.withDayOfMonth(1);
-                    endDate = date.withDayOfMonth(date.lengthOfMonth());
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid view type: " + viewType);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Course course = Course.builder()
+                        .id(rs.getInt("course_id"))
+                        .name(rs.getString("course_name"))
+                        .description(rs.getString("description"))
+                        .instructor(rs.getString("teacher_name"))
+                        .build();
+                        
+                    Room room = Room.builder()
+                        .roomId(rs.getInt("room_id"))
+                        .location(rs.getString("room_location"))
+                        .capacity(rs.getInt("capacity"))
+                        .build();
+                        
+                    Schedule schedule = Schedule.builder()
+                        .scheduleId(rs.getInt("id"))
+                        .course(course)
+                        .room(room)
+                        .date(date)
+                        .dayOfWeek(rs.getString("day_of_week"))
+                        .startTime(rs.getTime("start_time").toLocalTime())
+                        .endTime(rs.getTime("end_time").toLocalTime())
+                        .status(rs.getString("status"))
+                        .build();
+                        
+                    schedules.add(schedule);
+                }
             }
-            
-            // Example query (implement according to your database setup):
-            return scheduleRepository.findByDateBetween(startDate, endDate);
-            */
-            
-        } catch (Exception e) {
-            // Log the error
-            System.err.println("Error fetching schedule: " + e.getMessage());
-            e.printStackTrace();
-            // Return empty list instead of null
-            return new ArrayList<>();
         }
+        return schedules;
     }
     
     /**
@@ -123,15 +139,8 @@ public class ScheduleService {
      * Retrieves all schedules
      * @return List of all schedules, never null
      */
-    public List<Schedule> getAllSchedules() {
-        try {
-            // TODO: Replace with actual database query
-            return new ArrayList<>();
-        } catch (Exception e) {
-            System.err.println("Error fetching all schedules: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+    public List<Schedule> getAllSchedules() throws SQLException {
+        return getSchedule(LocalDate.now(), "ALL");
     }
 
     /**
@@ -139,15 +148,56 @@ public class ScheduleService {
      * @param teacherId The ID of the teacher
      * @return List of schedules for the teacher, never null
      */
-    public List<Schedule> getSchedulesByTeacher(int teacherId) {
-        try {
-            // TODO: Replace with actual database query
-            return new ArrayList<>();
-        } catch (Exception e) {
-            System.err.println("Error fetching teacher schedules: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
+    public List<Schedule> getSchedulesByTeacher(int teacherId) throws SQLException {
+        String sql = """
+            SELECT s.*, c.name as course_name, c.description,
+                   u.name as teacher_name,
+                   r.location as room_location, r.capacity
+            FROM schedules s
+            JOIN courses c ON s.course_id = c.id
+            JOIN users u ON c.teacher_id = u.id
+            JOIN rooms r ON s.room_id = r.id
+            WHERE s.status = 'ACTIVE'
+            AND c.teacher_id = ?
+            ORDER BY s.day_of_week, s.start_time""";
+            
+        List<Schedule> schedules = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            pstmt.setInt(1, teacherId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Course course = Course.builder()
+                        .id(rs.getInt("course_id"))
+                        .name(rs.getString("course_name"))
+                        .description(rs.getString("description"))
+                        .instructor(rs.getString("teacher_name"))
+                        .build();
+                        
+                    Room room = Room.builder()
+                        .roomId(rs.getInt("room_id"))
+                        .location(rs.getString("room_location"))
+                        .capacity(rs.getInt("capacity"))
+                        .build();
+                        
+                    Schedule schedule = Schedule.builder()
+                        .scheduleId(rs.getInt("id"))
+                        .course(course)
+                        .room(room)
+                        .dayOfWeek(rs.getString("day_of_week"))
+                        .startTime(rs.getTime("start_time").toLocalTime())
+                        .endTime(rs.getTime("end_time").toLocalTime())
+                        .status(rs.getString("status"))
+                        .build();
+                        
+                    schedules.add(schedule);
+                }
+            }
         }
+        return schedules;
     }
 
     /**
@@ -155,14 +205,56 @@ public class ScheduleService {
      * @param studentId The ID of the student
      * @return List of schedules for the student, never null
      */
-    public List<Schedule> getSchedulesByStudent(int studentId) {
-        try {
-            // TODO: Replace with actual database query
-            return new ArrayList<>();
-        } catch (Exception e) {
-            System.err.println("Error fetching student schedules: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
+    public List<Schedule> getSchedulesByStudent(int studentId) throws SQLException {
+        String sql = """
+            SELECT s.*, c.name as course_name, c.description,
+                   u.name as teacher_name,
+                   r.location as room_location, r.capacity
+            FROM schedules s
+            JOIN courses c ON s.course_id = c.id
+            JOIN users u ON c.teacher_id = u.id
+            JOIN rooms r ON s.room_id = r.id
+            JOIN enrollments e ON c.id = e.course_id
+            WHERE s.status = 'ACTIVE'
+            AND e.student_id = ?
+            ORDER BY s.day_of_week, s.start_time""";
+            
+        List<Schedule> schedules = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             
+            pstmt.setInt(1, studentId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Course course = Course.builder()
+                        .id(rs.getInt("course_id"))
+                        .name(rs.getString("course_name"))
+                        .description(rs.getString("description"))
+                        .instructor(rs.getString("teacher_name"))
+                        .build();
+                        
+                    Room room = Room.builder()
+                        .roomId(rs.getInt("room_id"))
+                        .location(rs.getString("room_location"))
+                        .capacity(rs.getInt("capacity"))
+                        .build();
+                        
+                    Schedule schedule = Schedule.builder()
+                        .scheduleId(rs.getInt("id"))
+                        .course(course)
+                        .room(room)
+                        .dayOfWeek(rs.getString("day_of_week"))
+                        .startTime(rs.getTime("start_time").toLocalTime())
+                        .endTime(rs.getTime("end_time").toLocalTime())
+                        .status(rs.getString("status"))
+                        .build();
+                        
+                    schedules.add(schedule);
+                }
+            }
         }
+        return schedules;
     }
 } 

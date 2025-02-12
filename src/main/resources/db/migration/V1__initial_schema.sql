@@ -1,6 +1,21 @@
 -- V1__initial_schema.sql
 -- Initial database schema for Music Studio application
 
+-- Drop tables in correct dependency order
+DROP TABLE IF EXISTS enrollments CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS schedules CASCADE;
+DROP TABLE IF EXISTS courses CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Create users table if not exists
+DROP TABLE IF EXISTS enrollments;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS rooms;
+DROP TABLE IF EXISTS users;
+
 -- Create users table (base table for Student, Teacher, Artist)
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -31,7 +46,6 @@ CREATE TABLE courses (
     monthly_fee DECIMAL(10,2) NOT NULL DEFAULT 80.00,
     max_students INTEGER NOT NULL DEFAULT 20,
     active BOOLEAN NOT NULL DEFAULT true,
-    schedule VARCHAR(200)
 );
 
 -- Create payments table
@@ -57,11 +71,27 @@ CREATE TABLE enrollments (
     UNIQUE(student_id, course_id)
 );
 
--- Create indexes for performance
+-- Create schedules table
+CREATE TABLE schedules (
+    id SERIAL PRIMARY KEY,
+    course_id INTEGER REFERENCES courses(id),
+    room_id INTEGER REFERENCES rooms(id),
+    day_of_week VARCHAR(10) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status VARCHAR(20) DEFAULT 'ACTIVE',
+    CONSTRAINT valid_day_of_week CHECK (day_of_week IN ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY')),
+    CONSTRAINT valid_time_range CHECK (start_time < end_time),
+    UNIQUE(room_id, day_of_week, start_time, end_time)
+);
+
+-- Add necessary indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_courses_teacher ON courses(teacher_id);
 CREATE INDEX idx_payments_user ON payments(user_id);
 CREATE INDEX idx_payments_status ON payments(status);
 CREATE INDEX idx_enrollments_payment ON enrollments(payment_id);
-CREATE INDEX idx_enrollments_dates ON enrollments(start_date, end_date); 
+CREATE INDEX idx_enrollments_dates ON enrollments(start_date, end_date);
+CREATE INDEX idx_schedules_room_id ON schedules(room_id);
+CREATE INDEX idx_schedules_course_id ON schedules(course_id);

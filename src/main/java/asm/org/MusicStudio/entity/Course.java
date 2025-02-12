@@ -20,6 +20,9 @@ public class Course {
     private String instructor;
     private Integer maxStudents;
     private String schedule; // e.g., "Monday, Wednesday 15:00-16:30"
+    private String room;  // Add this field
+    @Builder.Default
+    private List<Schedule> schedules = new ArrayList<>();
     @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
 
@@ -34,5 +37,13 @@ public class Course {
 
     public double getMonthlyFee() {
         return monthlyFee;
+    }
+
+    public void addSchedule(Schedule schedule) {
+        schedules.add(schedule);
+    }
+
+    public void removeSchedule(Schedule schedule) {
+        schedules.remove(schedule);
     }
 }

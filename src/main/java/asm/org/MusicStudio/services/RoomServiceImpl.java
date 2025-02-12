@@ -1,8 +1,10 @@
 package asm.org.MusicStudio.services;
 
+import asm.org.MusicStudio.db.DatabaseConnection;
 import asm.org.MusicStudio.entity.Room;
 import asm.org.MusicStudio.entity.Artist;
 import asm.org.MusicStudio.entity.Schedule;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -10,13 +12,38 @@ import java.util.ArrayList;
 
 public class RoomServiceImpl implements RoomService {
     
+    private static RoomServiceImpl instance;
+    
+    public RoomServiceImpl() {}
+    
+    public static RoomServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new RoomServiceImpl();
+        }
+        return instance;
+    }
+    
     @Override
     public List<Room> getAvailableRooms(LocalDate date) {
-        //TODO: Use Room.isAvailable() method for each room
-        //TODO: Filter rooms based on date
-        //TODO: Check room capacity and current bookings
-        //TODO: Consider maintenance schedules
-        return new ArrayList<>(); // placeholder
+        List<Room> rooms = new ArrayList<>();
+        String sql = "SELECT id, location, capacity FROM rooms ORDER BY location";
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Room room = Room.builder()
+                    .roomId(rs.getInt("id"))
+                    .location(rs.getString("location"))
+                    .capacity(rs.getInt("capacity"))
+                    .build();
+                rooms.add(room);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching rooms: " + e.getMessage());
+        }
+        return rooms;
     }
     
     @Override
@@ -43,5 +70,10 @@ public class RoomServiceImpl implements RoomService {
         //TODO: Include room features
         //TODO: Include maintenance schedule
         return null;
+    }
+
+    @Override
+    public List<Room> getAllRooms() throws SQLException {
+        return getAvailableRooms(LocalDate.now()); // For now, return all rooms
     }
 } 

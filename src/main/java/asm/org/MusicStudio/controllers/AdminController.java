@@ -13,6 +13,9 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.Parent;
 
 public class AdminController {
     @FXML
@@ -35,15 +38,22 @@ public class AdminController {
     private StackPane contentArea;
     @FXML
     private ComboBox<String> roleFilter;
+    @FXML
+    private TableColumn<Schedule, String> roomColumn;
+    @FXML
+    private Button scheduleButton;
 
     private UserService userService;
     private User currentUser;
     private static final DateTimeFormatter DATE_FORMATTER = 
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+
     @FXML
     public void initialize() {
-        userService = new UserServiceImpl();
+         System.out.println("Debug: Initializing AdminController");
+         System.out.println("Debug: contentArea is " + (contentArea == null ? "null" : "initialized"));
+         userService = new UserServiceImpl();
         setupTableColumns();
         
         // Initialize role filter
@@ -68,6 +78,9 @@ public class AdminController {
         });
         
         loadUsers(); // Load initial data
+        
+        // Set the cell value factory for the room column
+        roomColumn.setCellValueFactory(new PropertyValueFactory<>("room"));
     }
 
     @FXML
@@ -194,6 +207,49 @@ public class AdminController {
     @FXML
     private void showReports() {
         // Implement reports view
+    }
+
+    @FXML
+    public void showSchedule() {
+        System.out.println("Debug: showSchedule method called");
+        try {
+            if (contentArea == null) {
+                System.err.println("Error: contentArea is null");
+                return;
+            }
+
+            System.out.println("Debug: Clearing content area");
+            contentArea.getChildren().clear();
+            
+            System.out.println("Debug: Loading FXML");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ScheduleView.fxml"));
+            Parent scheduleView = loader.load();
+            
+            // Initialize the controller with required services
+            ScheduleController scheduleController = loader.getController();
+            if (scheduleController == null) {
+                System.err.println("Error: Failed to get ScheduleController");
+                return;
+            }
+            
+            // Initialize services
+            scheduleController.setScheduleService(ScheduleService.getInstance());
+            scheduleController.setCourseService(CourseService.getInstance());
+            scheduleController.setRoomService(RoomService.getInstance());
+            scheduleController.setCurrentUser(currentUser);
+            
+            contentArea.getChildren().add(scheduleView);
+            
+            // Make sure the view is visible
+            scheduleView.setVisible(true);
+            
+            statusLabel.setText("Schedule view loaded");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error loading schedule view: " + e.getMessage());
+            showError("Error", "Failed to load schedule view: " + e.getMessage());
+        }
     }
 
     public void initData(User user) {
