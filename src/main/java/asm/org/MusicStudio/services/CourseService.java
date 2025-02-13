@@ -2,7 +2,6 @@ package asm.org.MusicStudio.services;
 
 import asm.org.MusicStudio.dao.CourseDAO;
 import asm.org.MusicStudio.entity.Course;
-import asm.org.MusicStudio.dao.CourseDAO;
 import java.sql.SQLException;
 import java.util.List;
 
