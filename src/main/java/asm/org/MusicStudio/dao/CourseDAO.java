@@ -1,26 +1,21 @@
 package asm.org.MusicStudio.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.util.ArrayList;
-import java.util.List;
-
 import asm.org.MusicStudio.db.DatabaseConnection;
 import asm.org.MusicStudio.entity.Course;
 import asm.org.MusicStudio.entity.User;
 import asm.org.MusicStudio.entity.Role;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CourseDAO {
     
     public List<Course> findAllActiveCourses() throws SQLException {
         String sql = """
-            SELECT c.*, u.name as instructor_name, 
+            SELECT c.*, u.name as teacher_name, 
                    s.day_of_week, s.start_time, s.end_time, r.location
             FROM courses c
-            JOIN users u ON c.instructor_id = u.id
+            JOIN users u ON c.teacher_id = u.id
             LEFT JOIN schedules s ON c.id = s.course_id
             LEFT JOIN rooms r ON s.room_id = r.id
             WHERE u.active = true
@@ -33,20 +28,15 @@ public class CourseDAO {
              ResultSet rs = pstmt.executeQuery()) {
             
             while (rs.next()) {
-                String schedule = formatSchedule(rs);
-                
-                User instructor = new User();
-                instructor.setId(rs.getInt("instructor_id"));
-                instructor.setName(rs.getString("instructor_name"));
-                
+                String schedule = buildScheduleString(rs);
+                    
                 Course course = Course.builder()
                     .id(rs.getInt("id"))
                     .name(rs.getString("name"))
-                    .instructor(instructor)
-                    .description(rs.getString("description"))
-                    .monthlyFee(rs.getDouble("monthly_fee"))
-                    .maxStudents(rs.getInt("max_students"))
-                    .enrolledCount(rs.getInt("enrolled_count"))
+                    .description(rs.getString("name") + " with " + rs.getString("teacher_name"))
+                    .monthlyFee(80.00) // Default fee since it's not in DB yet
+                    .instructor(createTeacherFromResultSet(rs))
+                    .maxStudents(20) // Default capacity
                     .schedule(schedule)
                     .build();
                     
@@ -56,34 +46,147 @@ public class CourseDAO {
         return courses;
     }
 
-    public List<Course> findCoursesByInstructorId(int instructorId) throws SQLException {
+    public List<Course> findAvailableCourses() throws SQLException {
         String sql = """
-            SELECT c.*, COUNT(e.id) as enrolled_count
+            SELECT c.*, u.name as teacher_name, 
+                   (SELECT COUNT(*) FROM enrollments e 
+                    WHERE e.course_id = c.id AND e.status = 'ACTIVE') as enrolled_count,
+                   s.day_of_week, s.start_time, s.end_time, r.location,
+                   c.monthly_fee
             FROM courses c
-            LEFT JOIN enrollments e ON c.id = e.course_id
-            WHERE c.instructor_id = ?
-            GROUP BY c.id
-            ORDER BY c.name""";
+            JOIN users u ON c.teacher_id = u.id
+            LEFT JOIN schedules s ON c.id = s.course_id
+            LEFT JOIN rooms r ON s.room_id = r.id
+            WHERE u.active = true
+        """;
+        
+        List<Course> courses = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
             
+            while (rs.next()) {
+                String schedule = buildScheduleString(rs);
+                Course course = Course.builder()
+                    .id(rs.getInt("id"))
+                    .name(rs.getString("name"))
+                    .description(rs.getString("description"))
+                    .monthlyFee(rs.getDouble("monthly_fee"))
+                    .instructor(createTeacherFromResultSet(rs))
+                    .maxStudents(rs.getInt("max_students"))
+                    .schedule(schedule)
+                    .build();
+                
+                courses.add(course);
+            }
+        }
+        return courses;
+    }
+
+    public boolean hasAvailableSlots(Integer courseId) throws SQLException {
+        String sql = """
+            SELECT (c.max_students > (
+                SELECT COUNT(*) FROM enrollments e 
+                WHERE e.course_id = ? AND e.status = 'ACTIVE'
+            )) as has_slots
+            FROM courses c
+            WHERE c.id = ?
+        """;
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, courseId);
+            pstmt.setInt(2, courseId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next() && rs.getBoolean("has_slots");
+            }
+        }
+    }
+
+    private String buildScheduleString(ResultSet rs) throws SQLException {
+        Time startTime = rs.getTime("start_time");
+        Time endTime = rs.getTime("end_time");
+        String dayOfWeek = rs.getString("day_of_week");
+        String location = rs.getString("location");
+        
+        if (startTime != null && endTime != null && dayOfWeek != null && location != null) {
+            return String.format("%s %s-%s (%s)",
+                dayOfWeek,
+                startTime.toLocalTime().toString(),
+                endTime.toLocalTime().toString(),
+                location);
+        }
+        return "Schedule to be announced";
+    }
+    public Course findById(Integer id) throws SQLException {
+        String sql = """
+            SELECT c.*, u.name as teacher_name, 
+                   s.day_of_week, s.start_time, s.end_time, r.location
+            FROM courses c
+            JOIN users u ON c.teacher_id = u.id
+            LEFT JOIN schedules s ON c.id = s.course_id
+            LEFT JOIN rooms r ON s.room_id = r.id
+            WHERE c.id = ?
+        """;
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, id);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String schedule = buildScheduleString(rs);
+                    return Course.builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .description(rs.getString("description"))
+                        .monthlyFee(rs.getDouble("monthly_fee"))
+                        .instructor(createTeacherFromResultSet(rs))
+                        .maxStudents(rs.getInt("max_students"))
+                        .schedule(schedule)
+                        .build();
+                }
+                return null; // Return null if no course found
+            }
+        }
+    }
+
+    public List<Course> findCoursesByTeacherId(Integer teacherId) throws SQLException {
+        String sql = """
+            SELECT c.*, u.name as teacher_name,
+                   s.day_of_week, s.start_time, s.end_time, r.location
+            FROM courses c
+            JOIN users u ON c.teacher_id = u.id
+            LEFT JOIN schedules s ON c.id = s.course_id
+            LEFT JOIN rooms r ON s.room_id = r.id
+            WHERE c.teacher_id = ?
+            ORDER BY c.name
+        """;
+        
         List<Course> courses = new ArrayList<>();
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setInt(1, instructorId);
+            pstmt.setInt(1, teacherId);
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    User instructor = new User();
-                    instructor.setId(rs.getInt("instructor_id"));
-                    instructor.setName(rs.getString("instructor_name"));
-                    
+                    String schedule = buildScheduleString(rs);
                     Course course = Course.builder()
                         .id(rs.getInt("id"))
                         .name(rs.getString("name"))
-                        .instructor(instructor)
-                        .enrolledCount(rs.getInt("enrolled_count"))
+                        .description(rs.getString("description"))
+                        .monthlyFee(rs.getDouble("monthly_fee"))
+                        .instructor(createTeacherFromResultSet(rs))
+                        .maxStudents(rs.getInt("max_students"))
+                        .schedule(schedule)
                         .build();
+                    
                     courses.add(course);
                 }
             }
@@ -91,143 +194,97 @@ public class CourseDAO {
         return courses;
     }
 
-    public List<Course> findByTeacherId(int teacherId) throws SQLException {
-        String sql = """
-            SELECT c.*, u.name as teacher_name 
-            FROM courses c
-            JOIN users u ON c.teacher_id = u.id
-            WHERE c.teacher_id = ?
-        """;
+    public void assignRoomToCourse(Integer courseId, Integer roomId, 
+                                 String dayOfWeek, Time startTime, Time endTime) throws SQLException {
+        String sql = "INSERT INTO schedules (course_id, room_id, day_of_week, start_time, end_time) VALUES (?, ?, ?, ?, ?)";
         
-        List<Course> courses = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setInt(1, teacherId);
-            ResultSet rs = pstmt.executeQuery();
+            pstmt.setInt(1, courseId);
+            pstmt.setInt(2, roomId);
+            pstmt.setString(3, dayOfWeek);
+            pstmt.setTime(4, startTime);
+            pstmt.setTime(5, endTime);
             
-            while (rs.next()) {
-                // Create teacher User object
-                User teacher = new User();
-                teacher.setId(rs.getInt("teacher_id"));
-                teacher.setName(rs.getString("teacher_name"));
-                teacher.setRole(Role.TEACHER);
-                
-                Course course = Course.builder()
-                    .id(rs.getInt("id"))
-                    .name(rs.getString("name"))
-                    .instructor(teacher)  // Pass User object instead of String
-                    .schedule(rs.getString("schedule"))
-                    .build();
-                courses.add(course);
-            }
-        }
-        return courses;
-    }
-
-    private String formatSchedule(ResultSet rs) throws SQLException {
-        try {
-            Time startTime = rs.getTime("start_time");
-            Time endTime = rs.getTime("end_time");
-            String dayOfWeek = rs.getString("day_of_week");
-            
-            if (startTime == null || endTime == null || dayOfWeek == null) {
-                return "Schedule to be announced";
-            }
-            
-            String scheduleStr = String.format("%s %s-%s", 
-                dayOfWeek,
-                startTime.toLocalTime().toString(),
-                endTime.toLocalTime().toString());
-                
-            String location = rs.getString("location");
-            if (location != null) {
-                scheduleStr += String.format(" (Room: %s)", location);
-            }
-            
-            String bookedBy = rs.getString("booked_by_name");
-            if (bookedBy != null) {
-                scheduleStr += String.format(" [Booked by: %s]", bookedBy);
-            }
-            
-            return scheduleStr;
-            
-        } catch (SQLException e) {
-            System.err.println("Error formatting schedule: " + e.getMessage());
-            return "Schedule to be announced";
+            pstmt.executeUpdate();
         }
     }
 
-    public List<Course> findAvailableCourses() throws SQLException {
+    public void uploadCourseFile(Integer courseId, String fileName, byte[] fileData) throws SQLException {
+        String sql = "INSERT INTO course_files (course_id, file_name, file_data) VALUES (?, ?, ?)";
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, courseId);
+            pstmt.setString(2, fileName);
+            pstmt.setBytes(3, fileData);
+            
+            pstmt.executeUpdate();
+        }
+    }
+
+    public List<Course> findEnrolledStudentsCourses(Integer studentId) throws SQLException {
         String sql = """
-            SELECT c.*, u.name as instructor_name, u.email as instructor_email,
-                   (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) as enrollment_count
+            SELECT c.*, u.name as teacher_name,
+                   s.day_of_week, s.start_time, s.end_time, r.location
             FROM courses c
-            JOIN users u ON c.instructor_id = u.id
-            WHERE c.status = 'ACTIVE'
-            AND (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) < c.capacity
+            JOIN users u ON c.teacher_id = u.id
+            JOIN enrollments e ON c.id = e.course_id
+            LEFT JOIN schedules s ON c.id = s.course_id
+            LEFT JOIN rooms r ON s.room_id = r.id
+            WHERE e.student_id = ? AND e.status = 'ACTIVE'
+            ORDER BY c.name
         """;
         
         List<Course> courses = new ArrayList<>();
+        
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                courses.add(mapResultSetToCourse(rs));
+            pstmt.setInt(1, studentId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String schedule = buildScheduleString(rs);
+                    Course course = Course.builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .description(rs.getString("description"))
+                        .monthlyFee(rs.getDouble("monthly_fee"))
+                        .instructor(createTeacherFromResultSet(rs))
+                        .maxStudents(rs.getInt("max_students"))
+                        .schedule(schedule)
+                        .build();
+                    
+                    courses.add(course);
+                }
             }
         }
         return courses;
     }
 
-    public void incrementEnrollmentCount(int courseId) throws SQLException {
+    public void incrementEnrollmentCount(Integer courseId) throws SQLException {
         String sql = "UPDATE courses SET current_enrollment = current_enrollment + 1 WHERE id = ?";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            stmt.setInt(1, courseId);
-            stmt.executeUpdate();
+            pstmt.setInt(1, courseId);
+            pstmt.executeUpdate();
         }
     }
 
-    public Course findById(Integer id) throws SQLException {
-        String sql = """
-            SELECT c.*, u.name as instructor_name, u.email as instructor_email
-            FROM courses c
-            JOIN users u ON c.instructor_id = u.id
-            WHERE c.id = ?
-        """;
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToCourse(rs);
-            }
-        }
-        return null;
+    public List<Course> findByTeacherId(int teacherId) throws SQLException {
+        return findCoursesByTeacherId(teacherId);
     }
 
-    private Course mapResultSetToCourse(ResultSet rs) throws SQLException {
-        User instructor = new User();
-        instructor.setId(rs.getInt("instructor_id"));
-        instructor.setName(rs.getString("instructor_name"));
-        instructor.setEmail(rs.getString("instructor_email"));
-        instructor.setRole(Role.TEACHER);
-
-        return Course.builder()
-            .id(rs.getInt("id"))
-            .name(rs.getString("name"))
-            .description(rs.getString("description"))
-            .instructor(instructor)
-            .monthlyFee(rs.getDouble("monthly_fee"))
-            .maxStudents(rs.getInt("max_students"))
-            .enrolledCount(rs.getInt("enrolled_count"))
-            .status(rs.getString("status"))
-            .build();
+    private User createTeacherFromResultSet(ResultSet rs) throws SQLException {
+        User teacher = new User();
+        teacher.setId(rs.getInt("teacher_id"));
+        teacher.setName(rs.getString("teacher_name"));
+        teacher.setRole(Role.TEACHER);
+        return teacher;
     }
 } 

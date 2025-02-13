@@ -1,15 +1,7 @@
 package asm.org.MusicStudio.entity;
 
+import javafx.beans.property.*;
 import java.time.LocalDateTime;
-
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -17,7 +9,6 @@ import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
-@NoArgsConstructor
 @AllArgsConstructor
 public class User {
     private Integer id;
@@ -27,6 +18,19 @@ public class User {
     private String role;
     private boolean active;
     private LocalDateTime lastLogin;
+
+    public User() {
+        this.idProperty.set(0);
+        this.nameProperty.set("");
+        this.emailProperty.set("");
+        this.roleProperty.set(Role.STUDENT);
+        this.passwordProperty.set("");
+        this.saltProperty.set("");
+        this.activeProperty.set(true);
+        this.lastLoginProperty.set(LocalDateTime.now());
+        this.resetToken.set("");
+        this.resetTokenExpiry.set(null);
+    }
 
     @Override
     public String toString() {
@@ -40,13 +44,10 @@ public class User {
     private final StringProperty passwordProperty = new SimpleStringProperty();
     private final StringProperty saltProperty = new SimpleStringProperty();
     private final BooleanProperty activeProperty = new SimpleBooleanProperty(true);
-    private final ObjectProperty<LocalDateTime> lastLoginProperty = 
-        new SimpleObjectProperty<>();
+    private final ObjectProperty<LocalDateTime> lastLoginProperty = new SimpleObjectProperty<>();
     private final StringProperty resetToken = new SimpleStringProperty();
-    private final ObjectProperty<LocalDateTime> resetTokenExpiry = 
-        new SimpleObjectProperty<>();
+    private final ObjectProperty<LocalDateTime> resetTokenExpiry = new SimpleObjectProperty<>();
 
-    // Property getters
     public IntegerProperty idProperty() { return idProperty; }
     public StringProperty nameProperty() { return nameProperty; }
     public StringProperty emailProperty() { return emailProperty; }
@@ -58,7 +59,6 @@ public class User {
     public StringProperty resetTokenProperty() { return resetToken; }
     public ObjectProperty<LocalDateTime> resetTokenExpiryProperty() { return resetTokenExpiry; }
 
-    // Regular getters and setters
     public int getId() { return idProperty.get(); }
     public void setId(int id) { this.idProperty.set(id); }
     
@@ -98,19 +98,15 @@ public class User {
     public void setActive(boolean active) { this.activeProperty.set(active); }
     
     public LocalDateTime getLastLogin() { return lastLoginProperty.get(); }
-    public void setLastLogin(LocalDateTime lastLogin) { 
-        this.lastLoginProperty.set(lastLogin); 
-    }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLoginProperty.set(lastLogin); }
     
     public String getResetToken() { return resetToken.get(); }
     public void setResetToken(String token) { this.resetToken.set(token); }
     
     public LocalDateTime getResetTokenExpiry() { return resetTokenExpiry.get(); }
-    public void setResetTokenExpiry(LocalDateTime expiry) { 
-        this.resetTokenExpiry.set(expiry); 
-    }
+    public void setResetTokenExpiry(LocalDateTime expiry) { this.resetTokenExpiry.set(expiry); }
 
     public String getUsername() {
-        return getName(); // Use the proper getter instead of direct field access
+        return getName();
     }
 } 

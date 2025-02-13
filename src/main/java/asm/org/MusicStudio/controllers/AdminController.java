@@ -1,18 +1,26 @@
 package asm.org.MusicStudio.controllers;
 
-import asm.org.MusicStudio.entity.*;
-import asm.org.MusicStudio.services.*;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.User;
+import asm.org.MusicStudio.services.UserService;
+import asm.org.MusicStudio.services.UserServiceImpl;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.StackPane;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.stage.Stage;
-import java.util.List;
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 
 public class AdminController {
     @FXML
@@ -200,5 +208,9 @@ public class AdminController {
         setCurrentAdmin(user);
         statusLabel.setText("Logged in as: " + user.getName());
         loadUsers();
+    }
+
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
     }
 }

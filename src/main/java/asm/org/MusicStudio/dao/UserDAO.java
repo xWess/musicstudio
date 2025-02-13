@@ -186,6 +186,24 @@ public class UserDAO {
         return null;
     }
 
+    public User findByUsernameAndPassword(String username, String password) throws SQLException {
+        String sql = "SELECT * FROM users WHERE name = ? AND password = ?";
+
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return createUserFromResultSet(rs);
+                }
+            }
+        }
+        return null;
+    }
+
     private User createUserFromResultSet(ResultSet rs) throws SQLException {
         String rawRole = rs.getString("role");
         System.out.println("Raw role from database: '" + rawRole + "'");
