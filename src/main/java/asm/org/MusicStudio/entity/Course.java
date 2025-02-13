@@ -46,4 +46,17 @@ public class Course {
     public void removeSchedule(Schedule schedule) {
         schedules.remove(schedule);
     }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", description='" + description + '\'' +
+            ", monthlyFee=" + monthlyFee +
+            ", instructor='" + instructor + '\'' +
+            ", maxStudents=" + maxStudents +
+            ", room='" + room + '\'' +
+            '}';
+    }
 }

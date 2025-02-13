@@ -130,4 +130,18 @@ public class Schedule {
     public boolean isForDate(LocalDate otherDate) {
         return date != null && date.equals(otherDate);
     }
+
+    @Override
+    public String toString() {
+        return "Schedule{" +
+            "scheduleId=" + scheduleId +
+            ", date=" + date +
+            ", dayOfWeek='" + dayOfWeek + '\'' +
+            ", startTime=" + startTime +
+            ", endTime=" + endTime +
+            ", courseName=" + (course != null ? course.getName() : "null") +
+            ", roomLocation=" + (room != null ? room.getLocation() : "null") +
+            ", status='" + status + '\'' +
+            '}';
+    }
 }
