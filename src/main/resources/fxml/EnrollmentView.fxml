@@ -17,7 +17,7 @@
     
     <HBox styleClass="action-bar">
         <Button text="Enroll in Course" onAction="#showEnrollmentDialog" 
-                styleClass="action-button,primary-button">
+                styleClass="action-button primary-button">
             <graphic>
                 <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
             </graphic>

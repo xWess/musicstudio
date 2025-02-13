@@ -6,22 +6,43 @@
 <?import javafx.scene.text.Text?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox fx:id="scheduleContent" styleClass="content-container"
-      xmlns="http://javafx.com/javafx"
+<VBox fx:id="scheduleContent" spacing="10" xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="asm.org.MusicStudio.controllers.ScheduleController">
+      fx:controller="asm.org.MusicStudio.controllers.ScheduleController"
+      visible="true" managed="true">
     
-    <HBox styleClass="page-header"></HBox>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
         <Text styleClass="page-title" text="Class Schedule"/>
-    
-    
-    <HBox styleClass="action-bar">
-        <DatePicker fx:id="scheduleDatePicker"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <ComboBox fx:id="scheduleViewType" promptText="View Type" styleClass="filter-combo"/>
     </HBox>
     
-    <TableView fx:id="scheduleTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <DatePicker fx:id="scheduleDatePicker"/>
+        <ComboBox fx:id="scheduleViewType"/>
+        <Region HBox.hgrow="ALWAYS" />
+        <HBox fx:id="adminControls" spacing="10">
+            <Button fx:id="addScheduleButton" text="Add Schedule">
+                <graphic>
+                    <FontIcon iconLiteral="fas-plus" />
+                </graphic>
+            </Button>
+            <Button fx:id="editScheduleButton" text="Edit">
+                <graphic>
+                    <FontIcon iconLiteral="fas-edit" />
+                </graphic>
+            </Button>
+            <Button fx:id="deleteScheduleButton" text="Delete">
+                <graphic>
+                    <FontIcon iconLiteral="fas-trash" />
+                </graphic>
+            </Button>
+        </HBox>
+    </HBox>
+    
+    <TableView fx:id="scheduleTable" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="timeColumn" text="Time" prefWidth="120"/>
             <TableColumn fx:id="courseColumn" text="Course" prefWidth="200"/>

@@ -2,10 +2,13 @@ package asm.org.MusicStudio.services;
 
 import asm.org.MusicStudio.entity.User;
 import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.Teacher;
 
 import java.util.List;
 import java.time.LocalDateTime;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public interface UserService {
     void addUser(User user);
@@ -78,4 +81,8 @@ public interface UserService {
      * @param email User email
      */
     void initiatePasswordReset(String email);
+
+    List<Teacher> getAllTeachers() throws SQLException;
+
+    int getTeacherIdByName(String instructor);
 }

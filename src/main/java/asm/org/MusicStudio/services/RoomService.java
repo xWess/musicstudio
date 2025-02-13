@@ -6,6 +6,11 @@ import asm.org.MusicStudio.entity.Schedule;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public interface RoomService {
     
@@ -14,7 +19,7 @@ public interface RoomService {
      * @param date The date to check
      * @return List of available rooms
      */
-    List<Room> getAvailableRooms(LocalDate date);
+    List<Room> getAvailableRooms(LocalDate date) throws SQLException;
     
     /**
      * Books a room for an artist
@@ -41,4 +46,10 @@ public interface RoomService {
      * @return Room details
      */
     Room getRoomDetails(Long roomId);
+
+    List<Room> getAllRooms() throws SQLException;
+
+    static RoomService getInstance() {
+        return RoomServiceImpl.getInstance();
+    }
 } 

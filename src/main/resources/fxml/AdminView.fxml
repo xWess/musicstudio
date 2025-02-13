@@ -41,9 +41,14 @@
             </VBox>
             
             <VBox styleClass="nav-buttons">
-                <Button fx:id="usersButton" text="Users" styleClass="nav-button,selected">
+                <Button fx:id="usersButton" text="Users" styleClass="nav-button selected">
                     <graphic>
                         <FontIcon iconLiteral="fas-users" iconSize="20" styleClass="nav-icon"/>
+                    </graphic>
+                </Button>
+                <Button text="Schedule" onAction="#showSchedule" fx:id="scheduleButton" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-calendar" iconSize="20" styleClass="nav-icon"/>
                     </graphic>
                 </Button>
                 <Button fx:id="systemButton" text="System" styleClass="nav-button">
@@ -69,7 +74,7 @@
                 </HBox>
                 
                 <HBox styleClass="action-bar">
-                    <Button text="Add User" onAction="#showAddUserDialog" styleClass="action-button, primary-button">
+                    <Button text="Add User" onAction="#showAddUserDialog" styleClass="action-button primary-button">
                         <graphic>
                             <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
                         </graphic>
@@ -79,7 +84,7 @@
                             <FontIcon iconLiteral="fas-edit" iconSize="16" styleClass="action-icon"/>
                         </graphic>
                     </Button>
-                    <Button text="Delete User" onAction="#handleDeleteUser" styleClass="action-button, danger-button">
+                    <Button text="Delete User" onAction="#handleDeleteUser" styleClass="action-button danger-button">
                         <graphic>
                             <FontIcon iconLiteral="fas-trash" iconSize="16" styleClass="action-icon"/>
                         </graphic>
@@ -104,6 +109,28 @@
                     </columns>
                 </TableView>
             </VBox>
+            
+            <!-- Schedule Content -->
+            <VBox fx:id="scheduleContent" styleClass="content-container" visible="false">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="Schedule Management"/>
+                </HBox>
+                
+                <HBox styleClass="action-bar">
+                    <DatePicker fx:id="scheduleDatePicker"/>
+                    <ComboBox fx:id="scheduleViewType"/>
+                </HBox>
+                
+                <TableView fx:id="scheduleTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+                    <columns>
+                        <TableColumn fx:id="timeColumn" text="Time" prefWidth="150"/>
+                        <TableColumn fx:id="courseColumn" text="Course" prefWidth="200"/>
+                        <TableColumn fx:id="teacherColumn" text="Teacher" prefWidth="200"/>
+                        <TableColumn fx:id="roomColumn" text="Room" prefWidth="100"/>
+                        <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
         </StackPane>
     </center>
     
@@ -115,4 +142,4 @@
         </HBox>
     </bottom>
     
-</BorderPane> 
+</BorderPane>

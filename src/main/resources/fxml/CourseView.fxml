@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="asm.org.MusicStudio.controllers.CourseViewController"
+      styleClass="content-container">
+    
+    <HBox styleClass="page-header">
+        <Text styleClass="page-title" text="Available Courses"/>
+    </HBox>
+    
+    <HBox styleClass="action-bar">
+        <TextField fx:id="searchField" promptText="Search courses..." styleClass="search-field"/>
+        <ComboBox fx:id="instructorFilter" promptText="Filter by Instructor" styleClass="filter-combo"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="addCourseButton" text="Add Course" onAction="#showAddCourseDialog" 
+                styleClass="action-button primary-button">
+            <graphic>
+                <FontIcon iconLiteral="fas-plus" iconSize="16" styleClass="action-icon"/>
+            </graphic>
+        </Button>
+        <Button fx:id="editCourseButton" text="Edit Course" onAction="#showEditCourseDialog" 
+                styleClass="action-button secondary-button">
+            <graphic>
+                <FontIcon iconLiteral="fas-edit" iconSize="16" styleClass="action-icon"/>
+            </graphic>
+        </Button>
+        <Button fx:id="deleteCourseButton" text="Delete Course" onAction="#handleDeleteCourse" 
+                styleClass="action-button danger-button">
+            <graphic>
+                <FontIcon iconLiteral="fas-trash" iconSize="16" styleClass="action-icon"/>
+            </graphic>
+        </Button>
+    </HBox>
+    
+    <TableView fx:id="courseTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="nameColumn" text="Course Name" prefWidth="200"/>
+            <TableColumn fx:id="instructorColumn" text="Instructor" prefWidth="150"/>
+            <TableColumn fx:id="roomColumn" text="Room" prefWidth="150"/>
+            <TableColumn fx:id="scheduleColumn" text="Schedule" prefWidth="300"/>
+            <TableColumn fx:id="feeColumn" text="Monthly Fee" prefWidth="120"/>
+            <TableColumn fx:id="capacityColumn" text="Capacity" prefWidth="100"/>
+        </columns>
+    </TableView>
+    
+    <VBox fx:id="courseDetailsPane" styleClass="details-pane" visible="false">
+        <Label fx:id="courseTitle" styleClass="details-title"/>
+    </VBox>
+</VBox>

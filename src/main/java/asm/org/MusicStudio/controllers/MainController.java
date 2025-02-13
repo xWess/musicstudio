@@ -31,6 +31,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import asm.org.MusicStudio.services.ScheduleService;
+import asm.org.MusicStudio.entity.Schedule;
+import javafx.scene.layout.BorderPane;
+import asm.org.MusicStudio.services.CourseService;
+import asm.org.MusicStudio.services.RoomService;
 
 public class MainController {
     @FXML
@@ -121,6 +129,12 @@ public class MainController {
     private PaymentService paymentService;
     private ScheduleService scheduleService;
     private User currentUser;
+
+    @FXML
+    private VBox coursesContent;
+    
+    @FXML
+    private Button coursesButton;  // Add this if you have a courses navigation button
 
     @FXML
     public void initialize() {
@@ -226,6 +240,10 @@ public class MainController {
         enrollmentsButton.getStyleClass().remove("selected");
         roomsButton.getStyleClass().remove("selected");
         profileButton.getStyleClass().remove("selected");
+        // Add courses button
+        if (coursesButton != null) {
+            coursesButton.getStyleClass().remove("selected");
+        }
     }
 
     @FXML
@@ -277,25 +295,30 @@ public class MainController {
     @FXML
     private void showSchedule() {
         try {
-            if (scheduleService == null) {
-                throw new IllegalStateException("Schedule service not initialized");
-            }
-            
             hideAllContent();
-            if (scheduleContent != null) {
-                scheduleContent.setVisible(true);
-                scheduleContent.setManaged(true);
-            }
-            updateNavButtonStates(scheduleButton);
+            clearSelectedButtons();
             
-            // Load schedule data
-            LocalDate today = LocalDate.now();
-            List<Schedule> schedules = scheduleService.getSchedule(today, "DAILY");
-            // Update your schedule view with the data
+            // Load the ScheduleView
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ScheduleView.fxml"));
+            Node scheduleView = loader.load();
             
-        } catch (Exception e) {
+            // Get and configure the controller
+            ScheduleController scheduleController = loader.getController();
+            scheduleController.setScheduleService(ScheduleService.getInstance());
+            scheduleController.setCourseService(CourseService.getInstance());
+            scheduleController.setRoomService(RoomService.getInstance());
+            scheduleController.setCurrentUser(currentUser);
+            
+            // Add view to content area
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(scheduleView);
+            
+            // Update button state
+            scheduleButton.getStyleClass().add("selected");
+            
+        } catch (IOException e) {
             e.printStackTrace();
-            showError("Error", "Failed to load schedule: " + e.getMessage());
+            showError("Error", "Failed to load schedule view: " + e.getMessage());
         }
     }
 
@@ -452,6 +475,11 @@ public class MainController {
         if (profileContent != null) {
             profileContent.setVisible(false);
             profileContent.setManaged(false);
+        }
+        // Add new content container
+        if (coursesContent != null) {
+            coursesContent.setVisible(false);
+            coursesContent.setManaged(false);
         }
 
         // Clear any selections
@@ -765,8 +793,38 @@ public class MainController {
         this.currentUser = user;
         
         // Configure UI based on user role
-        if (user != null) {
-            configureUIForUserRole();
+        if (coursesButton != null) {
+            // Allow both teachers and admins to manage courses
+            boolean canManageCourses = user.getRole() == Role.TEACHER || 
+                                     user.getRole() == Role.ADMIN;
+            coursesButton.setVisible(canManageCourses);
+            coursesButton.setManaged(canManageCourses);
+        }
+        
+        if (user.getRole() != Role.ADMIN) {
+            // Hide users view for non-admins
+            if (usersButton != null) {
+                usersButton.setVisible(false);
+                usersButton.setManaged(false);
+            }
+            // Show appropriate default view
+            if (user.getRole() == Role.TEACHER) {
+                showCourses(); // Show courses view for teachers
+            } else {
+                showSchedule(); // Show schedule for other roles
+            }
+        } else {
+            // Show users view for admin
+            if (usersButton != null) {
+                usersButton.setVisible(true);
+                usersButton.setManaged(true);
+            }
+            showUsers();
+        }
+        
+        // Update status label
+        if (statusLabel != null) {
+            statusLabel.setText("Welcome, " + user.getName());
         }
     }
 
@@ -774,6 +832,7 @@ public class MainController {
         if (currentUser == null) return;
 
         boolean isAdmin = currentUser.getRole() == Role.ADMIN;
+        boolean isTeacher = currentUser.getRole() == Role.TEACHER;
         
         // Configure UI elements based on role
         if (usersButton != null) {
@@ -781,11 +840,14 @@ public class MainController {
             usersButton.setManaged(isAdmin);
         }
 
-        // Show appropriate default view
+        // Show appropriate default view based on role
         if (isAdmin) {
             showUsers();
+        } else if (isTeacher) {
+            showCourses();
         } else {
             showEnrollments();
+            showSchedule();
         }
     }
 
@@ -989,6 +1051,7 @@ public class MainController {
             ((ProfileViewController) profileViewController).saveProfileChanges();
         }
     }
+    
 
     @FXML
     public void showChangePasswordDialog() {
@@ -1029,5 +1092,37 @@ public class MainController {
         alert.setContentText(message);
         alert.getDialogPane().setMinWidth(400);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void showCourses() {
+        try {
+            // Allow both students and teachers/admins to access courses
+            if (currentUser == null) {
+                showError("Access Denied", "Please log in to view courses.");
+                return;
+            }
+
+            hideAllContent();
+            if (coursesContent != null) {
+                coursesContent.setVisible(true);
+                coursesContent.setManaged(true);
+            }
+            updateNavButtonStates(coursesButton);
+            statusLabel.setText("Courses view loaded");
+
+            // Load the CourseViewController with appropriate permissions
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CourseView.fxml"));
+            Node courseView = loader.load();
+            
+            CourseViewController controller = loader.getController();
+            controller.setCurrentUser(currentUser);
+            
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(courseView);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load courses view: " + e.getMessage());
+        }
     }
 }

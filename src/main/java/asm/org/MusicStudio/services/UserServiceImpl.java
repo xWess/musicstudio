@@ -3,6 +3,7 @@ package asm.org.MusicStudio.services;
 import asm.org.MusicStudio.dao.UserDAO;
 import asm.org.MusicStudio.entity.User;
 import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.Teacher;
 import asm.org.MusicStudio.db.DatabaseConnection;
 
 import java.sql.Connection;
@@ -12,6 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
@@ -255,5 +257,24 @@ public class UserServiceImpl implements UserService {
             System.out.println("Error verifying password: " + e.getMessage());
             return false;
         }
+    }
+
+    @Override
+    public List<Teacher> getAllTeachers() {
+    try {
+        return userDAO.findByRole(Role.TEACHER)
+            .stream()
+            .map(user -> new Teacher(user.getId(), user.getName(), user.getEmail()))
+            .collect(Collectors.toList());
+    } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public int getTeacherIdByName(String instructor) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTeacherIdByName'");
     }
 }
