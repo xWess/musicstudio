@@ -36,7 +36,7 @@ public class FileManagementController {
     @FXML private TextArea fileDescription;
     
     private CourseFileService fileService;
-    private int currentTeacherId;
+    private int instructorId;
     private int currentCourseId;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -53,9 +53,14 @@ public class FileManagementController {
         });
     }
 
+    @Deprecated
     public void setTeacherId(int teacherId) {
-        this.currentTeacherId = teacherId;
-        loadTeacherFiles();
+        setInstructorId(teacherId);
+    }
+
+    public void setInstructorId(int instructorId) {
+        this.instructorId = instructorId;
+        loadInstructorFiles();
     }
 
     private void setupTable() {
@@ -107,7 +112,7 @@ public class FileManagementController {
                 CourseFile uploadedFile = fileService.uploadFile(
                     selectedFile,
                     courseSelector.getValue(),
-                    currentTeacherId,
+                    instructorId,
                     description
                 );
                 refreshFiles();
@@ -149,10 +154,10 @@ public class FileManagementController {
         // is already set in FXML with onAction="#handleDelete"
     }
 
-    private void loadTeacherFiles() {
-        if (currentTeacherId > 0) {
-            // Load course IDs for the teacher
-            List<Integer> courseIds = fileService.getTeacherCourseIds(currentTeacherId);
+    private void loadInstructorFiles() {
+        if (instructorId > 0) {
+            // Load course IDs for the instructor
+            List<Integer> courseIds = fileService.getTeacherCourseIds(instructorId);
             Platform.runLater(() -> {
                 courseSelector.getItems().clear();
                 courseSelector.getItems().addAll(courseIds);
@@ -162,7 +167,7 @@ public class FileManagementController {
                     currentCourseId = courseIds.get(0);
                     refreshFiles();
                 } else {
-                    updateStatus("No courses found for this teacher", true);
+                    updateStatus("No courses found for this instructor", true);
                 }
             });
         }
@@ -190,7 +195,7 @@ public class FileManagementController {
     }
 
     private void setupCourseSelector() {
-        List<Integer> courseIds = fileService.getTeacherCourseIds(currentTeacherId);
+        List<Integer> courseIds = fileService.getTeacherCourseIds(instructorId);
         courseSelector.getItems().addAll(courseIds);
         courseSelector.setOnAction(event -> {
             currentCourseId = courseSelector.getValue();

@@ -24,7 +24,7 @@ public class ScheduleViewController {
     @FXML private ComboBox<String> timeFilter;
 
     private CourseService courseService;
-    private int currentTeacherId;
+    private int currentInstructorId;
     private ObservableList<Course> courseData;
 
     @FXML
@@ -36,9 +36,9 @@ public class ScheduleViewController {
         setupTableColumns();
     }
 
-    public void setCurrentTeacherId(int teacherId) {
-        System.out.println("Setting teacher ID: " + teacherId);
-        this.currentTeacherId = teacherId;
+    public void setCurrentInstructorId(int instructorId) {
+        System.out.println("Setting instructor ID: " + instructorId);
+        this.currentInstructorId = instructorId;
         loadSchedule();
     }
 
@@ -83,12 +83,13 @@ public class ScheduleViewController {
 
     private void loadSchedule() {
         try {
-            System.out.println("Loading schedule for teacher ID: " + currentTeacherId);
+            System.out.println("Loading schedule for instructor ID: " + currentInstructorId);
             courseData.clear();
-            List<Course> courses = courseService.getCoursesByTeacher(currentTeacherId);
+            List<Course> courses = courseService.getCoursesByInstructor(currentInstructorId);
             System.out.println("Found " + courses.size() + " courses");
             courseData.addAll(courses);
             scheduleTable.setItems(courseData);
+            filterSchedule();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Failed to load schedule: " + e.getMessage());

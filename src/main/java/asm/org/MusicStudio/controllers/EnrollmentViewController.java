@@ -64,8 +64,8 @@ public class EnrollmentViewController {
         
         instructorColumn.setCellValueFactory(cellData -> {
             Course course = cellData.getValue().getCourse();
-            User teacher = course != null ? course.getTeacher() : null;
-            return new SimpleStringProperty(teacher != null ? teacher.getName() : "");
+            User instructor = course != null ? course.getInstructor() : null;
+            return new SimpleStringProperty(instructor != null ? instructor.getName() : "");
         });
         
         scheduleColumn.setCellValueFactory(cellData -> {

@@ -27,9 +27,10 @@ public class Schedule {
     // JavaFX Properties
     private final StringProperty timeProperty = new SimpleStringProperty();
     private final StringProperty courseProperty = new SimpleStringProperty();
-    private final StringProperty teacherProperty = new SimpleStringProperty();
+    private final StringProperty instructorDisplayProperty = new SimpleStringProperty();
     private final StringProperty roomProperty = new SimpleStringProperty();
     private final StringProperty statusProperty = new SimpleStringProperty();
+    private final StringProperty teacherProperty = new SimpleStringProperty();
 
     // Property getters
     public StringProperty timeProperty() {
@@ -43,9 +44,15 @@ public class Schedule {
     }
 
     public StringProperty teacherProperty() {
-        teacherProperty.set(course != null && course.getTeacher() != null ? 
-            course.getTeacher().getName() : "");
+        teacherProperty.set(course != null ? course.getInstructor().getName() : "");
         return teacherProperty;
+    }
+
+    public StringProperty instructorDisplayProperty() {
+        if (course != null && course.getInstructor() != null) {
+            instructorDisplayProperty.set(course.getInstructor().getName());
+        }
+        return instructorDisplayProperty;
     }
 
     public StringProperty roomProperty() {
@@ -68,8 +75,7 @@ public class Schedule {
         this.course = course;
         if (course != null) {
             courseProperty.set(course.getName());
-            teacherProperty.set(course.getTeacher() != null ? 
-                course.getTeacher().getName() : "");
+            instructorDisplayProperty.set(course.getInstructor().getName());
         }
     }
 

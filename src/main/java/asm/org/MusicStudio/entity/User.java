@@ -30,7 +30,7 @@ public class User {
 
     @Override
     public String toString() {
-        return name;
+        return getName() != null ? getName() : "";
     }
 
     private final IntegerProperty idProperty = new SimpleIntegerProperty();

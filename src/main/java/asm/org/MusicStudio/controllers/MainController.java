@@ -310,7 +310,7 @@ public class MainController {
             VBox scheduleView = loader.load();
             
             ScheduleViewController controller = loader.getController();
-            controller.setCurrentTeacherId(currentUser.getId());
+            controller.setCurrentInstructorId(currentUser.getId());
             
             contentArea.getChildren().clear();
             contentArea.getChildren().add(scheduleView);
@@ -708,7 +708,7 @@ public class MainController {
                         course.getName(),
                         months,
                         course.getSchedule(),
-                        course.getTeacher() != null ? course.getTeacher().getName() : "No teacher assigned"));
+                        course.getInstructor() != null ? course.getInstructor().getName() : "No instructor assigned"));
     }
 
     @FXML
@@ -839,7 +839,7 @@ public class MainController {
             } else {
                 setText(String.format("%s with %s - $%.2f/month",
                         course.getName(),
-                        course.getTeacher() != null ? course.getTeacher().getName() : "No teacher assigned",
+                        course.getInstructor() != null ? course.getInstructor().getName() : "No instructor assigned",
                         course.getMonthlyFee()));
             }
         }
@@ -1040,7 +1040,7 @@ public class MainController {
             
             StudentsViewController controller = loader.getController();
             controller.setUserService(userService);
-            controller.setCurrentTeacherId(currentUser.getId());
+            controller.setCurrentInstructorId(currentUser.getId());
             
             contentArea.getChildren().clear();
             contentArea.getChildren().add(studentsView);
@@ -1062,7 +1062,7 @@ public class MainController {
             Node fileManagementView = loader.load();
             
             FileManagementController controller = loader.getController();
-            controller.setTeacherId(currentUser.getId());
+            controller.setInstructorId(currentUser.getId());
             
             contentArea.getChildren().setAll(fileManagementView);
             updateNavButtonStates(fileManagementButton);
@@ -1077,7 +1077,7 @@ public class MainController {
         hideAllContent();
         filesContent.setVisible(true);
         if (fileManagementController != null && currentUser != null) {
-            fileManagementController.setTeacherId(currentUser.getId());
+            fileManagementController.setInstructorId(currentUser.getId());
             fileManagementController.initialize(); // Reinitialize the controller
         }
     }

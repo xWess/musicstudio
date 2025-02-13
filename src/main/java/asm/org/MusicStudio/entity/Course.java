@@ -16,7 +16,7 @@ public class Course {
     private Integer id;
     private String name;
     private String description;
-    private User teacher;
+    private User instructor;
     private Double monthlyFee;
     private Integer maxStudents;
     private Integer enrolledCount;
@@ -24,7 +24,7 @@ public class Course {
     private String status;
     @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
-    private int teacherId;
+    private int instructorId;
     private boolean active;
 
     // Helper methods
@@ -36,16 +36,29 @@ public class Course {
         enrollments.remove(enrollment);
     }
 
-    public Integer getTeacherId() {
-        return teacher != null ? teacher.getId() : null;
+    public Integer getInstructorId() {
+        return instructor != null ? instructor.getId() : null;
     }
 
-    public String getTeacherName() {
-        return teacher != null ? teacher.getName() : null;
+    public String getInstructorName() {
+        return instructor != null ? instructor.getName() : "";
+    }
+
+    public String getInstructorDisplay() {
+        return instructor != null ? instructor.getName() : "";
+    }
+
+    public User getInstructor() {
+        return instructor;
+    }
+
+    // Helper method to safely get instructor name
+    public String getInstructorNameSafe() {
+        return getInstructor() != null ? getInstructor().getName() : "";
     }
 
     @Override
     public String toString() {
-        return name;
+        return instructor != null ? instructor.getName() : "";
     }
 }

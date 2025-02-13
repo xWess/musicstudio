@@ -26,8 +26,8 @@ public class EnrollmentService {
      */
     public List<Enrollment> getEnrollments(String semester) {
         try {
-            // For now, just get all enrollments without semester filter
-            return enrollmentDAO.findByTeacherId(getCurrentUserId());
+            // Change from findByTeacherId to findByInstructorId
+            return enrollmentDAO.findByInstructorId(getCurrentUserId());
         } catch (SQLException e) {
             System.err.println("Error fetching enrollments: " + e.getMessage());
             e.printStackTrace();
@@ -97,7 +97,7 @@ public class EnrollmentService {
         try {
             // Replace placeholder implementation
             String sql = """
-                SELECT e.*, c.name as course_name, c.teacher_id
+                SELECT e.*, c.name as course_name, c.instructor_id
                 FROM enrollments e
                 JOIN courses c ON e.course_id = c.id
                 WHERE e.student_id = ?
@@ -145,11 +145,11 @@ public class EnrollmentService {
         }
     }
 
-    public List<Enrollment> getEnrollmentsByTeacher(int teacherId) {
+    public List<Enrollment> getEnrollmentsByInstructor(int instructorId) {
         try {
-            return enrollmentDAO.findByTeacherId(teacherId);
+            return enrollmentDAO.findByInstructorId(instructorId);
         } catch (SQLException e) {
-            System.err.println("Error fetching teacher enrollments: " + e.getMessage());
+            System.err.println("Error fetching instructor enrollments: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }

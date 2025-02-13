@@ -29,7 +29,7 @@ public class StudentsViewController {
     private UserService userService;
     private EnrollmentService enrollmentService;
     private CourseService courseService;
-    private int currentTeacherId;
+    private int currentInstructorId;
 
     @FXML
     public void initialize() {
@@ -77,7 +77,7 @@ public class StudentsViewController {
         Course selectedCourse = courseFilter.getValue();
         
         ObservableList<Enrollment> filteredList = FXCollections.observableArrayList(
-            enrollmentService.getEnrollmentsByTeacher(currentTeacherId).stream()
+            enrollmentService.getEnrollmentsByInstructor(currentInstructorId).stream()
                 .filter(enrollment -> {
                     boolean matchesSearch = searchText.isEmpty() || 
                         enrollment.getStudent().getName().toLowerCase().contains(searchText) ||
@@ -95,7 +95,7 @@ public class StudentsViewController {
     private void loadCourseFilter() {
         try {
             courseFilter.setItems(FXCollections.observableArrayList(
-                courseService.getCoursesByTeacher(currentTeacherId)
+                courseService.getCoursesByInstructor(currentInstructorId)
             ));
         } catch (Exception e) {
             showError("Error", "Failed to load courses: " + e.getMessage());
@@ -106,18 +106,18 @@ public class StudentsViewController {
         this.userService = userService;
     }
 
-    public void setCurrentTeacherId(int teacherId) {
-        System.out.println("Setting teacher ID to: " + teacherId);
-        this.currentTeacherId = teacherId;
-        loadCourseFilter();  // This is where it starts failing
+    public void setCurrentInstructorId(int instructorId) {
+        System.out.println("Setting instructor ID to: " + instructorId);
+        this.currentInstructorId = instructorId;
+        loadCourseFilter();
     }
 
     private void loadStudents() {
         try {
-            System.out.println("Loading students for teacher ID: " + currentTeacherId);
+            System.out.println("Loading students for instructor ID: " + currentInstructorId);
             
             ObservableList<Enrollment> enrollments = FXCollections.observableArrayList(
-                enrollmentService.getEnrollmentsByTeacher(currentTeacherId)
+                enrollmentService.getEnrollmentsByInstructor(currentInstructorId)
             );
             
             System.out.println("Found " + enrollments.size() + " enrollments");

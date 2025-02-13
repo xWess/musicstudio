@@ -14,8 +14,8 @@ import asm.org.MusicStudio.entity.Role;
 import asm.org.MusicStudio.entity.User;
 
 public class EnrollmentDAO {
-    public List<Enrollment> findByTeacherId(int teacherId) throws SQLException {
-        System.out.println("Finding enrollments for teacher ID: " + teacherId);
+    public List<Enrollment> findByInstructorId(int teacherId) throws SQLException {
+        System.out.println("Finding enrollments for instructor ID: " + teacherId);
         List<Enrollment> enrollments = new ArrayList<>();
         String sql = """
             SELECT e.id as enrollment_id, 
@@ -60,14 +60,14 @@ public class EnrollmentDAO {
                 student.setRole(Role.STUDENT);
                 
                 // Create teacher object from result set
-                User teacher = new User();
-                teacher.setId(rs.getInt("teacher_id"));
-                teacher.setRole(Role.TEACHER);
+                User instructor = new User();
+                instructor.setId(rs.getInt("teacher_id"));
+                instructor.setRole(Role.TEACHER);
                 
                 Course course = Course.builder()
                     .id(rs.getInt("course_id"))
                     .name(rs.getString("course_name"))
-                    .teacher(teacher)  // Pass the teacher object
+                    .instructor(instructor)  // Changed from teacher to instructor
                     .build();
                 
                 Enrollment enrollment = Enrollment.builder()
@@ -202,12 +202,12 @@ public class EnrollmentDAO {
 
     public List<Enrollment> findByStudentId(int studentId) throws SQLException {
         String sql = """
-            SELECT e.*, u.name as student_name, u.email as student_email,
-                   c.name as course_name, c.teacher_id
+            SELECT e.*, c.*, u.name as instructor_name 
             FROM enrollments e
-            JOIN users u ON e.student_id = u.id
             JOIN courses c ON e.course_id = c.id
+            JOIN users u ON c.teacher_id = u.id
             WHERE e.student_id = ?
+            ORDER BY e.start_date DESC
         """;
         
         List<Enrollment> enrollments = new ArrayList<>();
@@ -242,6 +242,114 @@ public class EnrollmentDAO {
         }
     }
 
+    public List<Enrollment> findCurrentEnrollmentsByStudent(Integer studentId) throws SQLException {
+        String sql = """
+            SELECT e.*, c.id as course_id, c.name, c.description,
+                   u.name as instructor_name, e.start_date, e.end_date, e.status
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.id
+            JOIN users u ON c.teacher_id = u.id
+            WHERE e.student_id = ? AND e.status = 'ACTIVE'
+            AND e.end_date >= CURRENT_DATE
+        """;
+        
+        List<Enrollment> enrollments = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, studentId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // Create instructor User object
+                    User instructor = new User();
+                    instructor.setId(rs.getInt("teacher_id"));
+                    instructor.setName(rs.getString("instructor_name"));
+                    instructor.setRole(Role.TEACHER);
+
+                    Course course = Course.builder()
+                        .id(rs.getInt("course_id"))
+                        .name(rs.getString("name"))
+                        .description(rs.getString("description"))
+                        .instructor(instructor)  // Pass instructor object instead of string
+                        .build();
+
+                    // Create student User object instead of Student class
+                    User student = new User();
+                    student.setId(studentId);
+                    student.setRole(Role.STUDENT);
+
+                    Enrollment enrollment = Enrollment.builder()
+                        .id(rs.getInt("id"))
+                        .student(student)  // Use User instead of Student
+                        .course(course)
+                        .startDate(rs.getDate("start_date").toLocalDate())
+                        .endDate(rs.getDate("end_date").toLocalDate())
+                        .status(rs.getString("status"))
+                        .build();
+                    
+                    enrollments.add(enrollment);
+                }
+            }
+        }
+        return enrollments;
+    }
+
+    public List<Enrollment> findAllEnrollmentsByStudent(Integer studentId) throws SQLException {
+        String sql = """
+            SELECT e.*, c.*, u.name as teacher_name 
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.id
+            JOIN users u ON c.teacher_id = u.id
+            WHERE e.student_id = ?
+            ORDER BY e.start_date DESC
+        """;
+        
+        List<Enrollment> enrollments = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, studentId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    // Create student User object
+                    User student = new User();
+                    student.setId(studentId);
+                    student.setRole(Role.STUDENT);
+
+                    // Create instructor User object
+                    User instructor = new User();
+                    instructor.setId(rs.getInt("teacher_id"));
+                    instructor.setName(rs.getString("teacher_name"));
+                    instructor.setRole(Role.TEACHER);
+
+                    Course course = Course.builder()
+                        .id(rs.getInt("course_id"))
+                        .name(rs.getString("name"))
+                        .instructor(instructor)  // Use the instructor object we created
+                        .schedule(rs.getString("schedule"))
+                        .build();
+                    
+                    // Rest of the enrollment building...
+                    Enrollment enrollment = Enrollment.builder()
+                        .id(rs.getInt("id"))
+                        .student(student)  // Use User instead of Student
+                        .course(course)
+                        .startDate(rs.getDate("start_date").toLocalDate())
+                        .endDate(rs.getDate("end_date").toLocalDate())
+                        .status(rs.getString("status"))
+                        .build();
+                    
+                    enrollments.add(enrollment);
+                }
+            }
+        }
+        return enrollments;
+    }
+
     private Enrollment mapResultSetToEnrollment(ResultSet rs) throws SQLException {
         User student = new User();
         student.setId(rs.getInt("student_id"));
@@ -249,14 +357,14 @@ public class EnrollmentDAO {
         student.setEmail(rs.getString("student_email"));
         student.setRole(Role.STUDENT);
         
-        User teacher = new User();
-        teacher.setId(rs.getInt("teacher_id"));
-        teacher.setRole(Role.TEACHER);
+        User instructor = new User();
+        instructor.setId(rs.getInt("teacher_id"));
+        instructor.setRole(Role.TEACHER);
         
         Course course = Course.builder()
             .id(rs.getInt("course_id"))
             .name(rs.getString("course_name"))
-            .teacher(teacher)
+            .instructor(instructor)  // Changed from teacher to instructor
             .build();
         
         return Enrollment.builder()

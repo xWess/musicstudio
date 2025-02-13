@@ -39,14 +39,14 @@ public class CourseService {
         }
     }
 
-    public List<Course> getCoursesByTeacher(int teacherId) {
-        System.out.println("CourseService: Getting courses for teacher " + teacherId);
+    public List<Course> getCoursesByInstructor(int instructorId) {
         try {
-            List<Course> courses = courseDAO.findByTeacherId(teacherId);
+            System.out.println("CourseService: Getting courses for instructor " + instructorId);
+            List<Course> courses = courseDAO.findByTeacherId(instructorId);
             System.out.println("CourseService: Found " + courses.size() + " courses");
             return courses;
         } catch (SQLException e) {
-            System.err.println("CourseService Error: " + e.getMessage());
+            System.err.println("Error fetching courses: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }

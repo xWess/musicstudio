@@ -17,6 +17,7 @@ public class EnrollmentDialog extends Dialog<Enrollment> {
     private ComboBox<String> semesterComboBox;
     private TextField instructorField;
     private TextField scheduleField;
+    private Integer courseId;
 
     public EnrollmentDialog() {
         setTitle("Enroll in Course");
@@ -66,8 +67,9 @@ public class EnrollmentDialog extends Dialog<Enrollment> {
                 teacher.setRole(Role.TEACHER);
 
                 Course course = Course.builder()
+                    .id(1)
                     .name(selectedCourseName)
-                    .teacher(teacher)
+                    .instructor(teacher)
                     .build();
 
                 return Enrollment.builder()
