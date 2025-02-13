@@ -11,6 +11,9 @@ module asm.org.MusicStudio {
     requires org.postgresql.jdbc;
     requires javafx.base;
     requires javafx.graphics;
+    requires stripe.java;
+    requires javafx.web;
+    requires jdk.jsobject;
 
     opens asm.org.MusicStudio to javafx.fxml;
     opens asm.org.MusicStudio.controllers to javafx.fxml;

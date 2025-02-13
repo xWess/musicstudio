@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import at.favre.lib.crypto.bcrypt.BCrypt;
 
 
 public class UserServiceImpl implements UserService {
@@ -45,7 +46,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUser(User user) {
         try {
-            userDAO.updateUser(user);
+            String query = "UPDATE users SET name = ?, email = ? WHERE id = ?";
+            
+            try (Connection conn = DatabaseConnection.getInstance().getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(query)) {
+                
+                stmt.setString(1, user.getName());
+                stmt.setString(2, user.getEmail());
+                stmt.setInt(3, user.getId());
+                
+                int rowsAffected = stmt.executeUpdate();
+                if (rowsAffected == 0) {
+                    throw new SQLException("Failed to update user, no rows affected.");
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Error updating user: " + e.getMessage(), e);
         }
@@ -136,13 +150,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updatePassword(User user, String oldPassword, String newPassword) {
+    public void updatePassword(User user, String currentPassword, String newPassword) {
         try {
-            if (!validateCredentials(user.getEmail(), oldPassword)) {
+            if (!validateCredentials(user.getEmail(), currentPassword)) {
                 throw new IllegalArgumentException("Current password is incorrect");
             }
-            user.setPassword(hashPassword(newPassword));
-            userDAO.updateUser(user);
+            
+            String sql = "UPDATE users SET password = ? WHERE id = ?";
+            try (Connection conn = DatabaseConnection.getInstance().getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setString(1, hashPassword(newPassword));
+                stmt.setInt(2, user.getId());
+                
+                int rowsAffected = stmt.executeUpdate();
+                if (rowsAffected == 0) {
+                    throw new SQLException("Failed to update password, no rows affected.");
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Error updating password: " + e.getMessage(), e);
         }
@@ -167,9 +192,21 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userDAO.findByEmail(email);
             if (user == null) {
+                System.out.println("User not found with email: " + email);
                 return false;
             }
-            return verifyPassword(password, user.getPassword());
+            
+            // Debug logging
+            System.out.println("Validating password for user: " + email);
+            
+            BCrypt.Result result = BCrypt.verifyer().verify(
+                password.toCharArray(), 
+                user.getPassword().toCharArray()
+            );
+            
+            System.out.println("Password validation result: " + result.verified);
+            return result.verified;
+            
         } catch (SQLException e) {
             throw new RuntimeException("Error validating credentials: " + e.getMessage(), e);
         }
@@ -206,13 +243,20 @@ public class UserServiceImpl implements UserService {
     }
 
     private String hashPassword(String password) {
-        // TODO: Implement proper password hashing (e.g., using BCrypt)
-        return password; // Placeholder implementation
+        return BCrypt.withDefaults().hashToString(12, password.toCharArray());
     }
 
-    private boolean verifyPassword(String rawPassword, String hashedPassword) {
-        // TODO: Implement proper password verification
-        return rawPassword.equals(hashedPassword); // Placeholder implementation
+    private boolean verifyPassword(String inputPassword, String storedHash) {
+        try {
+            BCrypt.Result result = BCrypt.verifyer().verify(
+                inputPassword.toCharArray(), 
+                storedHash.toCharArray()
+            );
+            return result.verified;
+        } catch (Exception e) {
+            System.out.println("Error verifying password: " + e.getMessage());
+            return false;
+        }
     }
 
     @Override

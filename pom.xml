@@ -53,9 +53,19 @@
             <version>21.0.1</version>
         </dependency>
         <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>21.0.1</version>
+        </dependency>
+        <dependency>
             <groupId>at.favre.lib</groupId>
             <artifactId>bcrypt</artifactId>
             <version>0.10.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>28.3.0</version>
         </dependency>
         <dependency>
             <groupId>at.favre.lib</groupId>
@@ -118,6 +128,19 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>asm.org.MusicStudio.MusicStudioApplication</mainClass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>asm.org.MusicStudio.Main</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

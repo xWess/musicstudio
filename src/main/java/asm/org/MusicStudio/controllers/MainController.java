@@ -1,39 +1,35 @@
 package asm.org.MusicStudio.controllers;
 
-import asm.org.MusicStudio.entity.User;
-import asm.org.MusicStudio.entity.Artist;
-import asm.org.MusicStudio.entity.Role;
-import asm.org.MusicStudio.entity.Student;
-import asm.org.MusicStudio.entity.Teacher;
+// Entity imports
+import asm.org.MusicStudio.entity.*;
+import asm.org.MusicStudio.entity.Course;
+
+// Service imports
 import asm.org.MusicStudio.services.UserService;
 import asm.org.MusicStudio.services.UserServiceImpl;
+import asm.org.MusicStudio.services.PaymentService;
+import asm.org.MusicStudio.services.ScheduleService;
+
+// JavaFX imports
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.collections.FXCollections;
-import javafx.scene.layout.GridPane;
-import javafx.geometry.Insets;
-import asm.org.MusicStudio.entity.Payment;
-import asm.org.MusicStudio.services.PaymentService;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TextField;
-import java.math.BigDecimal;
+import javafx.collections.ObservableList;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.geometry.Insets;
+
+// Java utility imports
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.Button;
-import java.sql.SQLException;
-import asm.org.MusicStudio.entity.Course;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXMLLoader;
-import java.io.IOException;
 import java.util.Optional;
 import java.time.LocalDate;
 import javafx.scene.Node;
@@ -118,10 +114,16 @@ public class MainController {
     private VBox profileContent;
 
     @FXML
+    private UserViewController usersViewController;
+
+    @FXML
     private ProfileViewController profileViewController;
 
     @FXML
-    private UserViewController usersViewController;
+    private EnrollmentViewController enrollmentViewController;
+
+    @FXML
+    private PaymentsViewController paymentsViewController;
 
     private UserService userService;
     private PaymentService paymentService;
@@ -144,7 +146,7 @@ public class MainController {
             
             // Initialize the users controller if it exists
             if (usersViewController != null) {
-                usersViewController.setUserService(userService);
+                ((UserViewController) usersViewController).setUserService(userService);
             }
             
             // Hide all content initially
@@ -322,7 +324,31 @@ public class MainController {
 
     @FXML
     private void showEnrollments() {
-        loadView("/fxml/EnrollmentView.fxml", enrollmentsButton);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EnrollmentView.fxml"));
+            Node enrollmentView = loader.load();
+            
+            EnrollmentViewController controller = loader.getController();
+            if (controller == null) {
+                throw new RuntimeException("Failed to get EnrollmentViewController");
+            }
+            
+            // Set the current user before showing the view
+            if (currentUser == null) {
+                System.out.println("Warning: Attempting to show enrollments with null user");
+            }
+            controller.setCurrentUser(currentUser);
+            
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(enrollmentView);
+            
+            // Update navigation state if needed
+            updateNavButtonStates(enrollmentsButton);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load enrollments view: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -340,13 +366,23 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Node view = loader.load();
             
+            // Set current user for enrollment view
+            if (fxmlPath.contains("ProfileView")) {
+                ProfileViewController controller = loader.getController();
+                controller.setCurrentUser(currentUser);
+            } else if (fxmlPath.contains("EnrollmentView")) {
+                EnrollmentViewController controller = loader.getController();
+                if (currentUser instanceof Student) {
+                    controller.setCurrentStudent((Student) currentUser);
+                }
+            }
+            
             // Clear existing content and add new view
             if (contentArea != null) {
                 contentArea.getChildren().clear();
                 contentArea.getChildren().add(view);
             }
             
-            // Update selected button state only if the button exists
             if (selectedButton != null) {
                 updateNavButtonStates(selectedButton);
             }
@@ -383,13 +419,35 @@ public class MainController {
 
     @FXML
     private void showPayments() {
-        clearSelectedButtons();
-        paymentsButton.getStyleClass().add("selected");
-        usersContent.setVisible(false);
-        usersContent.setManaged(false);
-        paymentsContent.setVisible(true);
-        paymentsContent.setManaged(true);
-        refreshPaymentTable();
+        try {
+            // Clear existing content first
+            contentArea.getChildren().clear();
+            
+            // Load the PaymentsView
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/PaymentsView.fxml"));
+            Node paymentsView = loader.load();
+            
+            // Get and configure the controller
+            PaymentsViewController controller = loader.getController();
+            if (controller == null) {
+                throw new RuntimeException("Failed to get PaymentsViewController");
+            }
+            
+            // Set the current student if the user is a student
+            if (currentUser instanceof Student) {
+                controller.setCurrentStudent((Student) currentUser);
+            }
+            
+            // Add view to content area
+            contentArea.getChildren().add(paymentsView);
+            
+            // Update navigation state
+            updateNavButtonStates(paymentsButton);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load payments view: " + e.getMessage());
+        }
     }
 
     private void hideAllContent() {
@@ -432,12 +490,16 @@ public class MainController {
     }
 
     private void refreshUserTable() {
-        if (userService != null) {
+        if (userService != null && userTable != null) {
             try {
                 List<User> users = userService.getAllUsers();
-                userTable.setItems(FXCollections.observableArrayList(users));
+                if (users != null) {
+                    userTable.setItems(FXCollections.observableArrayList(users));
+                }
             } catch (Exception e) {
-                showError("Error", "Failed to load users: " + e.getMessage());
+                e.printStackTrace();
+                // Don't show error dialog during initialization
+                statusLabel.setText("Failed to load users: " + e.getMessage());
             }
         }
     }
@@ -498,13 +560,18 @@ public class MainController {
                     newUser.setName(nameField.getText());
                     newUser.setEmail(emailField.getText());
                     newUser.setRole(selectedRole);
-
+                    
                     userService.addUser(newUser);
                     refreshUserTable();
                     statusLabel.setText("User added successfully");
                     return newUser;
                 } catch (Exception e) {
-                    showError("Error adding user", e.getMessage());
+                    if (e.getMessage().contains("users_email_key") || 
+                        e.getMessage().contains("clé dupliquée")) {
+                        showDuplicateEmailError(emailField.getText());
+                    } else {
+                        showError("Error adding user", e.getMessage());
+                    }
                     return null;
                 }
             }
@@ -704,7 +771,7 @@ public class MainController {
             Optional<ButtonType> result = dialog.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 EnrollmentDialogController controller = loader.getController();
-                controller.processEnrollment();
+                controller.handleEnroll();
                 showEnrollmentsView(); // Refresh the view
             }
         } catch (IOException e) {
@@ -721,8 +788,9 @@ public class MainController {
     }
 
     public void setCurrentUser(User user) {
+        System.out.println("Setting current user in MainController: " + 
+            (user != null ? user.getName() : "null"));
         this.currentUser = user;
-        System.out.println("Setting current user: " + user.getName());
         
         // Configure UI based on user role
         if (coursesButton != null) {
@@ -763,19 +831,13 @@ public class MainController {
     private void configureUIForUserRole() {
         if (currentUser == null) return;
 
-        // Hide/show navigation buttons based on role
         boolean isAdmin = currentUser.getRole() == Role.ADMIN;
         boolean isTeacher = currentUser.getRole() == Role.TEACHER;
         
+        // Configure UI elements based on role
         if (usersButton != null) {
             usersButton.setVisible(isAdmin);
             usersButton.setManaged(isAdmin);
-        }
-        
-        if (coursesButton != null) {
-            boolean canManageCourses = isAdmin || isTeacher;
-            coursesButton.setVisible(canManageCourses);
-            coursesButton.setManaged(canManageCourses);
         }
 
         // Show appropriate default view based on role
@@ -784,6 +846,7 @@ public class MainController {
         } else if (isTeacher) {
             showCourses();
         } else {
+            showEnrollments();
             showSchedule();
         }
     }
@@ -799,9 +862,27 @@ public class MainController {
     }
 
     public void initializeData() {
-        if (userService != null) {
-            refreshUserTable();
-            statusLabel.setText("Application ready");
+        if (currentUser == null) {
+            System.out.println("Warning: initializeData called with null currentUser");
+            return;
+        }
+        
+        try {
+            // Load initial data based on user role
+            if (currentUser.getRole() == Role.STUDENT) {
+                showEnrollments();
+            } else if (currentUser.getRole() == Role.ADMIN) {
+                showUsers();
+            }
+            
+            // Update status label if it exists
+            if (statusLabel != null) {
+                statusLabel.setText("Welcome, " + currentUser.getName());
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error initializing data: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -967,7 +1048,7 @@ public class MainController {
     @FXML
     public void saveProfileChanges() {
         if (profileViewController != null) {
-            profileViewController.saveProfileChanges();
+            ((ProfileViewController) profileViewController).saveProfileChanges();
         }
     }
     
@@ -975,7 +1056,7 @@ public class MainController {
     @FXML
     public void showChangePasswordDialog() {
         if (profileViewController != null) {
-            profileViewController.showChangePasswordDialog();
+            ((ProfileViewController) profileViewController).showChangePasswordDialog();
         }
     }
 
@@ -996,6 +1077,21 @@ public class MainController {
     private void toggleFullScreen() {
         Stage stage = (Stage) root.getScene().getWindow();
         stage.setFullScreen(!stage.isFullScreen());
+    }
+
+    private void showDuplicateEmailError(String email) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Registration Error");
+        alert.setHeaderText("Email Already in Use");
+        
+        String message = String.format(
+            "The email address '%s' is already associated with an existing account. " +
+            "Please use a different email address or log in with your existing account.", 
+            email);
+            
+        alert.setContentText(message);
+        alert.getDialogPane().setMinWidth(400);
+        alert.showAndWait();
     }
 
     @FXML

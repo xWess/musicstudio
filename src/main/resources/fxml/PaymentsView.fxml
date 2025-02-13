@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+
+<VBox fx:id="paymentsContent" styleClass="content-container"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="asm.org.MusicStudio.controllers.PaymentsViewController">
+    
+    <HBox styleClass="page-header">
+        <Text styleClass="page-title" text="My Payments"/>
+    </HBox>
+    
+    <TableView fx:id="paymentsTable" VBox.vgrow="ALWAYS" styleClass="data-table">
+        <columns>
+            <TableColumn fx:id="dateColumn" text="Date" prefWidth="150"/>
+            <TableColumn fx:id="amountColumn" text="Amount" prefWidth="100"/>
+            <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="250"/>
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox> 
