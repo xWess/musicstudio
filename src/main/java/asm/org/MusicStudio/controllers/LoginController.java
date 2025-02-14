@@ -57,6 +57,19 @@ public class LoginController {
         }
     }
     
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)\\.(com|org|net|edu|gov)$";
+        return email != null && email.matches(emailRegex);
+    }
+    
+    private void showInvalidEmailError() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Invalid Email");
+        alert.setHeaderText("Email Format Invalid");
+        alert.setContentText("Please enter a valid email address (e.g., user@domain.com)");
+        alert.showAndWait();
+    }
+    
     @FXML
     private void showRegisterDialog() {
         Dialog<User> dialog = new Dialog<>();
@@ -103,6 +116,11 @@ public class LoginController {
                         return null;
                     }
 
+                    if (!isValidEmail(emailField.getText())) {
+                        showInvalidEmailError();
+                        return null;
+                    }
+
                     Role selectedRole = Role.valueOf(roleCombo.getValue().toUpperCase());
                     // Create appropriate user type based on role
                     User newUser;
@@ -130,7 +148,11 @@ public class LoginController {
                     errorLabel.setVisible(true);
                     return registeredUser;
                 } catch (Exception e) {
-                    errorLabel.setText("Registration failed: " + e.getMessage());
+                    if (e.getMessage() != null && e.getMessage().contains("duplicate key value violates unique constraint")) {
+                        showDuplicateEmailError(emailField.getText());
+                    } else {
+                        errorLabel.setText("Registration failed: " + e.getMessage());
+                    }
                     errorLabel.setVisible(true);
                     return null;
                 }
@@ -274,5 +296,29 @@ public class LoginController {
         
         // Close login window
         ((Stage) emailField.getScene().getWindow()).close();
+    }
+
+    private void showDuplicateEmailError(String email) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Registration Error");
+        alert.setHeaderText("Email Already Registered");
+        
+        String message = String.format("""
+            The email address '%s' is already registered in our system.
+            
+            Please either:
+            • Use a different email address
+            • Login with your existing account
+            • Contact support if you need assistance
+            
+            Note: Each user must have a unique email address.""",
+            email);
+            
+        alert.setContentText(message);
+        
+        // Make the dialog wider
+        alert.getDialogPane().setMinWidth(400);
+        
+        alert.showAndWait();
     }
 } 

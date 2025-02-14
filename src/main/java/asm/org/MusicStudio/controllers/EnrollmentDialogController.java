@@ -11,6 +11,7 @@ import asm.org.MusicStudio.services.EnrollmentServiceImpl;
 import asm.org.MusicStudio.services.PaymentService;
 import asm.org.MusicStudio.services.StudentServiceImpl;
 import javafx.collections.FXCollections;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
@@ -19,6 +20,15 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+
+import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.VBox;
+import java.io.IOException;
+
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.List;
 
 public class EnrollmentDialogController {
     @FXML
@@ -76,6 +86,9 @@ public class EnrollmentDialogController {
                 return;
             }
             
+            if (!validateStudentEmail()) {
+                return;
+            }
             Course selectedCourse = courseComboBox.getValue();
             if (selectedCourse == null) {
                 showError("Error", "Please select a course");
@@ -137,6 +150,32 @@ public class EnrollmentDialogController {
         
         // Set default date to today
         startDatePicker.setValue(LocalDate.now());
+        
+        // Customize course display in ComboBox
+        courseComboBox.setCellFactory(param -> new ListCell<Course>() {
+            @Override
+            protected void updateItem(Course course, boolean empty) {
+                super.updateItem(course, empty);
+                if (empty || course == null) {
+                    setText(null);
+                } else {
+                    setText(course.getName());
+                }
+            }
+        });
+        
+        // Set the same display format for the selected item
+        courseComboBox.setButtonCell(new ListCell<Course>() {
+            @Override
+            protected void updateItem(Course course, boolean empty) {
+                super.updateItem(course, empty);
+                if (empty || course == null) {
+                    setText(null);
+                } else {
+                    setText(course.getName());
+                }
+            }
+        });
     }
 
     private void setupListeners() {
@@ -153,6 +192,25 @@ public class EnrollmentDialogController {
             double totalCost = selectedCourse.getMonthlyFee() * duration;
             totalCostLabel.setText(String.format("Total Cost: $%.2f", totalCost));
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)\\.(com|org|net|edu|gov)$";
+        return email != null && email.matches(emailRegex);
+    }
+    
+    private boolean validateStudentEmail() {
+        if (currentStudent == null || currentStudent.getEmail() == null) {
+            showError("Validation Error", "Student email is required");
+            return false;
+        }
+        
+        if (!isValidEmail(currentStudent.getEmail())) {
+            showError("Validation Error", 
+                "Invalid email format. Please use a valid email address (e.g., student@domain.com)");
+            return false;
+        }
+        return true;
     }
     
     private void showError(String title, String content) {
@@ -226,5 +284,48 @@ public class EnrollmentDialogController {
         alert.getDialogPane().getStyleClass().add("duplicate-email-error");
         
         alert.showAndWait();
+    }
+
+    @FXML
+    public void showEnrollmentDialog() {
+        if (currentStudent == null) {
+            System.out.println("Error: Cannot show enrollment dialog - currentStudent is null");
+            showError("Error", "No student selected");
+            return;
+        }
+        
+        try {
+            // Add email validation before showing dialog
+            if (!validateStudentEmail()) {
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EnrollmentDialog.fxml"));
+            VBox dialogContent = loader.load();
+            
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Course Enrollment");
+            dialog.setHeaderText("Enroll in a New Course");
+            
+            DialogPane dialogPane = new DialogPane();
+            dialogPane.setContent(dialogContent);
+            dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+            dialog.setDialogPane(dialogPane);
+            
+            EnrollmentDialogController controller = loader.getController();
+            controller.setCurrentStudent(currentStudent);
+            controller.setDialog(dialog);
+            
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == ButtonType.OK) {
+                    controller.handleEnroll();
+                }
+                return dialogButton;
+            });
+            
+            dialog.showAndWait();
+        } catch (IOException e) {
+            showError("Error", "Failed to show enrollment dialog: " + e.getMessage());
+        }
     }
 } 

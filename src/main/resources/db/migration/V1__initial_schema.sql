@@ -85,6 +85,8 @@ CREATE TABLE schedules (
     UNIQUE(room_id, day_of_week, start_time, end_time)
 );
 
+ALTER TABLE schedules ADD COLUMN status VARCHAR(20) DEFAULT 'ACTIVE';
+
 -- Add necessary indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);

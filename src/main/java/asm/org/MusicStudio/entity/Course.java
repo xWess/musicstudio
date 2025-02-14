@@ -13,6 +13,7 @@ import javafx.beans.property.DoubleProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -131,5 +132,32 @@ public class Course {
     public void setInstructor(String instructor) {
         this.teacherName = instructor;
         this.teacherNameProperty.set(instructor);
+    }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", description='" + description + '\'' +
+            ", monthlyFee=" + monthlyFee +
+            ", instructor='" + instructor + '\'' +
+            ", maxStudents=" + maxStudents +
+            ", room='" + room + '\'' +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return Objects.equals(id, course.id) &&
+               Objects.equals(name, course.name) &&
+               Objects.equals(description, course.description) &&
+               Objects.equals(monthlyFee, course.monthlyFee) &&
+               Objects.equals(instructor, course.instructor) &&
+               Objects.equals(maxStudents, course.maxStudents) &&
+               Objects.equals(room, course.room);
     }
 }

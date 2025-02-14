@@ -110,7 +110,6 @@ public class EnrollmentViewController {
     @FXML
     public void showEnrollmentDialog() {
         if (currentUser == null) {
-            System.out.println("Error: Cannot show enrollment dialog - currentUser is null");
             showError("Error", "No user logged in");
             return;
         }
@@ -137,11 +136,9 @@ public class EnrollmentViewController {
             controller.setCurrentStudent(currentStudent);
             controller.setDialog(dialog);
             
-            // Remove the setOnAction and use resultConverter instead
             dialog.setResultConverter(dialogButton -> {
                 if (dialogButton == ButtonType.OK) {
                     controller.handleEnroll();
-                    loadEnrollments();
                 }
                 return dialogButton;
             });
@@ -152,7 +149,6 @@ public class EnrollmentViewController {
             showError("Error", "Failed to show enrollment dialog: " + e.getMessage());
         }
     }
-
     private void setupTableColumns() {
         courseNameColumn.setCellValueFactory(data -> 
             new SimpleStringProperty(data.getValue().getCourse().getName()));

@@ -9,6 +9,7 @@ import javafx.beans.property.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -194,8 +195,8 @@ public class Schedule {
     public boolean isForDate(LocalDate otherDate) {
         return date != null && date.equals(otherDate);
     }
-
-    public StringProperty timeProperty() {
+  
+  public StringProperty timeProperty() {
         SimpleStringProperty timeProperty = new SimpleStringProperty();
         if (startTime != null) {
             String timeString = startTime.toLocalTime() + " - " + 
@@ -203,5 +204,34 @@ public class Schedule {
             timeProperty.set(timeString);
         }
         return timeProperty;
+  @Override
+    public String toString() {
+        return "Schedule{" +
+            "scheduleId=" + scheduleId +
+            ", date=" + date +
+            ", dayOfWeek='" + dayOfWeek + '\'' +
+            ", startTime=" + startTime +
+            ", endTime=" + endTime +
+            ", courseName=" + (course != null ? course.getName() : "null") +
+            ", roomLocation=" + (room != null ? room.getLocation() : "null") +
+            ", status='" + status + '\'' +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Schedule schedule = (Schedule) o;
+        return Objects.equals(scheduleId, schedule.scheduleId) &&
+               Objects.equals(date, schedule.date) &&
+               Objects.equals(dayOfWeek, schedule.dayOfWeek) &&
+               Objects.equals(startTime, schedule.startTime) &&
+               Objects.equals(endTime, schedule.endTime) &&
+               Objects.equals(status, schedule.status) &&
+               Objects.equals(course != null ? course.getId() : null, 
+                            schedule.course != null ? schedule.course.getId() : null) &&
+               Objects.equals(room != null ? room.getRoomNumber() : null,
+                            schedule.room != null ? schedule.room.getRoomNumber() : null);
     }
 }
