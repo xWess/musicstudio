@@ -139,6 +139,32 @@ public class EnrollmentDialogController {
         
         // Set default date to today
         startDatePicker.setValue(LocalDate.now());
+        
+        // Customize course display in ComboBox
+        courseComboBox.setCellFactory(param -> new ListCell<Course>() {
+            @Override
+            protected void updateItem(Course course, boolean empty) {
+                super.updateItem(course, empty);
+                if (empty || course == null) {
+                    setText(null);
+                } else {
+                    setText(course.getName());
+                }
+            }
+        });
+        
+        // Set the same display format for the selected item
+        courseComboBox.setButtonCell(new ListCell<Course>() {
+            @Override
+            protected void updateItem(Course course, boolean empty) {
+                super.updateItem(course, empty);
+                if (empty || course == null) {
+                    setText(null);
+                } else {
+                    setText(course.getName());
+                }
+            }
+        });
     }
 
     private void setupListeners() {
