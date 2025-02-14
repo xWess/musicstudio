@@ -8,6 +8,7 @@ import asm.org.MusicStudio.entity.Artist;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -255,6 +256,55 @@ public class ScheduleService {
                 }
             }
         }
+        return schedules;
+    }
+
+    public List<Schedule> getTeacherSchedules(Integer teacherId, LocalDate date) throws SQLException {
+        String sql = """
+            SELECT s.*, c.name as course_name, c.teacher_id,
+                   u.name as teacher_name, r.location as room_name
+            FROM schedules s
+            JOIN courses c ON s.course_id = c.id
+            JOIN users u ON c.teacher_id = u.id
+            LEFT JOIN rooms r ON s.room_id = r.id
+            WHERE c.teacher_id = ? AND s.date = ?
+            ORDER BY s.start_time
+            """;
+            
+        List<Schedule> schedules = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, teacherId);
+            stmt.setDate(2, java.sql.Date.valueOf(date));
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Schedule schedule = new Schedule();
+                schedule.setId(rs.getInt("id"));
+                schedule.setCourseId(rs.getInt("course_id"));
+                schedule.setCourseName(rs.getString("course_name"));
+                schedule.setTeacherId(rs.getInt("teacher_id"));
+                schedule.setTeacherName(rs.getString("teacher_name"));
+                schedule.setRoomId(rs.getInt("room_id"));
+                schedule.setRoomName(rs.getString("room_name"));
+                
+                LocalDate scheduleDate = rs.getDate("date").toLocalDate();
+                LocalTime startTime = rs.getTime("start_time").toLocalTime();
+                LocalTime endTime = rs.getTime("end_time").toLocalTime();
+                
+                schedule.setDate(scheduleDate);
+                schedule.setTimeRange(
+                    LocalDateTime.of(scheduleDate, startTime),
+                    LocalDateTime.of(scheduleDate, endTime)
+                );
+                
+                schedule.setStatus(rs.getString("status"));
+                schedules.add(schedule);
+            }
+        }
+        
         return schedules;
     }
 } 

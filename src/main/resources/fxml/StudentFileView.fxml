@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="asm.org.MusicStudio.controllers.StudentFileViewController">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <TableView fx:id="filesTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="fileNameColumn" text="File Name" prefWidth="150"/>
+            <TableColumn fx:id="courseColumn" text="Course" prefWidth="150"/>
+            <TableColumn fx:id="teacherColumn" text="Teacher" prefWidth="100"/>
+            <TableColumn fx:id="uploadDateColumn" text="Upload Date" prefWidth="150"/>
+            <TableColumn fx:id="fileSizeColumn" text="Size" prefWidth="80"/>
+            <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="200"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Download" onAction="#handleFileDownload"/>
+        <Button text="Refresh" onAction="#loadFiles"/>
+    </HBox>
+</VBox> 

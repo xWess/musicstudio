@@ -85,4 +85,10 @@ public interface UserService {
     List<Teacher> getAllTeachers() throws SQLException;
 
     int getTeacherIdByName(String instructor);
+
+    User getCurrentUser();
+
+    static UserService getInstance() {
+        return UserServiceImpl.getInstance();
+    }
 }

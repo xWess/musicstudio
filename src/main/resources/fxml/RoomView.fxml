@@ -11,6 +11,10 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="asm.org.MusicStudio.controllers.RoomViewController">
     
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+    
     <HBox styleClass="page-header">
         <Text styleClass="page-title" text="Practice Rooms"/>
     </HBox>
@@ -31,6 +35,7 @@
             <TableColumn fx:id="roomNumberColumn" text="Room" prefWidth="100"/>
             <TableColumn fx:id="roomTypeColumn" text="Type" prefWidth="150"/>
             <TableColumn fx:id="capacityColumn" text="Capacity" prefWidth="100"/>
+            <TableColumn fx:id="priceColumn" text="Price ($)" prefWidth="100"/>
             <TableColumn fx:id="availabilityColumn" text="Availability" prefWidth="150"/>
             <TableColumn fx:id="equipmentColumn" text="Equipment" prefWidth="200"/>
         </columns>

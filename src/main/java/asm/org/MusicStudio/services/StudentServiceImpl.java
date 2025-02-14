@@ -23,7 +23,7 @@ public class StudentServiceImpl implements StudentService {
     public StudentServiceImpl() {
         this.userDAO = new UserDAO();
         this.courseDAO = new CourseDAO();
-        this.enrollmentService = new EnrollmentServiceImpl();
+        this.enrollmentService = EnrollmentServiceImpl.getInstance();
         this.enrollmentDAO = new EnrollmentDAO();
         this.studentDAO = new StudentDAO();
     }

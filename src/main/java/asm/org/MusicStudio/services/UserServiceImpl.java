@@ -1,25 +1,35 @@
 package asm.org.MusicStudio.services;
 
-import asm.org.MusicStudio.dao.UserDAO;
-import asm.org.MusicStudio.entity.User;
-import asm.org.MusicStudio.entity.Role;
-import asm.org.MusicStudio.entity.Teacher;
-import asm.org.MusicStudio.db.DatabaseConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
+
+import asm.org.MusicStudio.dao.UserDAO;
+import asm.org.MusicStudio.db.DatabaseConnection;
+import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.Student;
+import asm.org.MusicStudio.entity.Teacher;
+import asm.org.MusicStudio.entity.User;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
 
 public class UserServiceImpl implements UserService {
     private final UserDAO userDAO;
+    private static UserServiceImpl instance;
+    private User currentUser;
+    
+    public static UserServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new UserServiceImpl();
+        }
+        return instance;
+    }
 
     public UserServiceImpl() {
         this.userDAO = new UserDAO();
@@ -28,9 +38,43 @@ public class UserServiceImpl implements UserService {
     @Override
     public void addUser(User user) {
         try {
-            userDAO.createUser(user);
+            // For new users
+            if (user.getId() == 0) {
+                if (findUserByEmail(user.getEmail()) != null) {
+                    throw new IllegalArgumentException("Email already exists");
+                }
+            }
+            
+            // Create appropriate user type
+            User newUser;
+            if (user.getRole() == Role.STUDENT) {
+                Student student = new Student();
+                student.setId(user.getId());
+                student.setName(user.getName());
+                student.setEmail(user.getEmail());
+                student.setRole(user.getRole());
+                student.setPassword(user.getPassword());
+                student.setSalt(user.getSalt());
+                student.setActive(user.isActive());
+                newUser = student;
+            } else if (user.getRole() == Role.TEACHER) {
+                Teacher teacher = new Teacher();
+                teacher.setId(user.getId());
+                teacher.setName(user.getName());
+                teacher.setEmail(user.getEmail());
+                teacher.setRole(user.getRole());
+                teacher.setPassword(user.getPassword());
+                teacher.setSalt(user.getSalt());
+                teacher.setActive(user.isActive());
+                newUser = teacher;
+            } else {
+                throw new IllegalArgumentException("Unsupported user role: " + user.getRole());
+            }
+            
+            userDAO.createUser(newUser);
+            
         } catch (SQLException e) {
-            throw new RuntimeException("Error adding user: " + e.getMessage(), e);
+            throw new RuntimeException("Error adding user", e);
         }
     }
 
@@ -39,7 +83,7 @@ public class UserServiceImpl implements UserService {
         try {
             return userDAO.findByEmail(email);
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding user by email: " + e.getMessage(), e);
+            throw new RuntimeException("Error finding user by email", e);
         }
     }
 
@@ -85,21 +129,14 @@ public class UserServiceImpl implements UserService {
                  ResultSet rs = stmt.executeQuery()) {
                 
                 while (rs.next()) {
-                    User user = new User();
+                    String roleStr = rs.getString("role");
+                    Role role = Role.fromString(roleStr);
+                    
+                    User user = createUserByRole(role);
                     user.setId(rs.getInt("id"));
                     user.setName(rs.getString("name"));
                     user.setEmail(rs.getString("email"));
-                    
-                    String roleStr = rs.getString("role");
-                    if (roleStr != null) {
-                        try {
-                            Role role = Role.fromString(roleStr);
-                            user.setRole(role);
-                        } catch (IllegalArgumentException e) {
-                            System.err.println("Invalid role found in database: " + roleStr);
-                            user.setRole(Role.STUDENT);
-                        }
-                    }
+                    user.setRole(role);
                     users.add(user);
                 }
             }
@@ -276,5 +313,25 @@ public class UserServiceImpl implements UserService {
     public int getTeacherIdByName(String instructor) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getTeacherIdByName'");
+    }
+
+    @Override
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+    }
+
+    private User createUserByRole(Role role) {
+        switch (role) {
+            case STUDENT:
+                return new Student();
+            case TEACHER:
+                return new Teacher();
+            default:
+                throw new IllegalArgumentException("Unsupported role: " + role);
+        }
     }
 }

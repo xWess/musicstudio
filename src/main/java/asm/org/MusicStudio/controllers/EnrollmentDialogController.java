@@ -1,20 +1,24 @@
 package asm.org.MusicStudio.controllers;
 
-import asm.org.MusicStudio.entity.Course;
-import asm.org.MusicStudio.entity.Student;
-import asm.org.MusicStudio.entity.Payment;
-import asm.org.MusicStudio.services.CourseService;
-import asm.org.MusicStudio.services.EnrollmentServiceImpl;
-import asm.org.MusicStudio.services.PaymentService;
-import asm.org.MusicStudio.services.StudentServiceImpl;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.collections.FXCollections;
-import javafx.stage.Stage;
-
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+
+import asm.org.MusicStudio.entity.Course;
+import asm.org.MusicStudio.entity.Payment;
+import asm.org.MusicStudio.entity.Student;
+import asm.org.MusicStudio.services.EnrollmentServiceImpl;
+import asm.org.MusicStudio.services.PaymentService;
+import asm.org.MusicStudio.services.StudentServiceImpl;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 
 public class EnrollmentDialogController {
     @FXML
@@ -39,7 +43,7 @@ public class EnrollmentDialogController {
     @FXML
     public void initialize() {
         paymentService = new PaymentService();
-        enrollmentService = new EnrollmentServiceImpl();
+        enrollmentService = EnrollmentServiceImpl.getInstance();
         studentService = new StudentServiceImpl();
         
         setupControls();

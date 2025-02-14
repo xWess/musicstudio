@@ -20,6 +20,7 @@ import java.io.IOException;
 import javafx.scene.Parent;
 import asm.org.MusicStudio.util.WindowManager;
 import asm.org.MusicStudio.MusicStudioApplication;
+import asm.org.MusicStudio.services.ArtistSessionServiceImpl;
 
 public class LoginController {
     @FXML
@@ -222,6 +223,14 @@ public class LoginController {
 
     private void handleSuccessfulLogin(User user) {
         try {
+            // Set current user in UserService
+            UserServiceImpl.getInstance().setCurrentUser(user);
+            
+            // If user is an artist, set in ArtistSessionService
+            if (user.getRole() == Role.ARTIST) {
+                ArtistSessionServiceImpl.getInstance().setCurrentArtist((Artist) user);
+            }
+            
             System.out.println("Login successful, user role: " + user.getRole());
             
             // Load the main view for all users

@@ -1,27 +1,30 @@
 package asm.org.MusicStudio.controllers;
 
-import asm.org.MusicStudio.entity.Enrollment;
-import asm.org.MusicStudio.entity.Student;
-import asm.org.MusicStudio.services.EnrollmentService;
-import asm.org.MusicStudio.services.EnrollmentServiceImpl;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXMLLoader;
-import javafx.beans.property.SimpleStringProperty;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import java.io.IOException;
 
-import asm.org.MusicStudio.controllers.EnrollmentDialogController;
+import asm.org.MusicStudio.entity.Enrollment;
+import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.Student;
+import asm.org.MusicStudio.entity.User;
+import asm.org.MusicStudio.services.EnrollmentService;
+import asm.org.MusicStudio.services.EnrollmentServiceImpl;
+import asm.org.MusicStudio.services.PaymentService;
 import asm.org.MusicStudio.services.StudentService;
 import asm.org.MusicStudio.services.StudentServiceImpl;
-import asm.org.MusicStudio.services.PaymentService;
-import javafx.scene.layout.VBox;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
-import asm.org.MusicStudio.entity.User;
-import asm.org.MusicStudio.entity.Role;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.VBox;
 
 
 public class EnrollmentViewController {
@@ -42,8 +45,7 @@ public class EnrollmentViewController {
     public void initialize() {
         System.out.println("Initializing EnrollmentViewController");
         try {
-            // Initialize services
-            enrollmentService = new EnrollmentServiceImpl();
+            enrollmentService = EnrollmentServiceImpl.getInstance();
             studentService = new StudentServiceImpl();
             paymentService = new PaymentService();
             

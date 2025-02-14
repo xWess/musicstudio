@@ -26,15 +26,20 @@ public class PaymentService {
         BigDecimal totalAmount = BigDecimal.valueOf(course.getMonthlyFee()).multiply(BigDecimal.valueOf(months));
         
         Payment payment = Payment.builder()
-            .user(user)
+            .userId(user.getId())
             .courseId(course.getId())
             .description(String.format("Enrollment in %s for %d months", course.getName(), months))
             .amount(totalAmount)
             .paymentDate(LocalDateTime.now())
-            .status("COMPLETED")  // Changed from PENDING since we're not using Stripe
+            .status("COMPLETED")
             .build();
         
         return paymentDAO.save(payment);
+    }
+
+    public void saveRoomBookingPayment(Payment payment, Integer bookingId) throws SQLException {
+        payment.setRoomBookingId(bookingId);
+        paymentDAO.save(payment);
     }
 
     public List<Payment> getUserPayments(User user) throws SQLException {

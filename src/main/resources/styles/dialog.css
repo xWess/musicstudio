@@ -1,0 +1,24 @@
+.dialog-pane {
+    -fx-pref-width: 350px;
+}
+
+.dialog-pane .content {
+    -fx-pref-width: 330px;
+}
+
+.dialog-pane .combo-box {
+    -fx-pref-width: 200px;
+}
+
+.dialog-pane .text-area {
+    -fx-pref-width: 200px;
+    -fx-pref-height: 80px;
+}
+
+.dialog-pane .button-bar {
+    -fx-pref-width: 330px;
+}
+
+.dialog-pane .label {
+    -fx-font-size: 12px;
+} 

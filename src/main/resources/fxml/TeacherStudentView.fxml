@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.text.Text?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="asm.org.MusicStudio.controllers.TeacherStudentViewController">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <HBox styleClass="page-header">
+        <Text styleClass="page-title" text="My Students"/>
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Select Course:"/>
+        <ComboBox fx:id="courseComboBox" prefWidth="200"/>
+    </HBox>
+
+    <TableView fx:id="studentTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="nameColumn" text="Student Name" prefWidth="150"/>
+            <TableColumn fx:id="emailColumn" text="Email" prefWidth="200"/>
+            <TableColumn fx:id="enrollmentDateColumn" text="Enrollment Date" prefWidth="120"/>
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox> 
