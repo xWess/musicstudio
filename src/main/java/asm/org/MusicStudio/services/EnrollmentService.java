@@ -34,4 +34,9 @@ public interface EnrollmentService {
      * Checks if a student can enroll in a course
      */
     boolean canEnroll(Student student, Course course) throws SQLException;
+
+    /**
+     * Finds enrollments for a teacher
+     */
+    List<Enrollment> getEnrollmentsByTeacher(int teacherId) throws SQLException;
 } 

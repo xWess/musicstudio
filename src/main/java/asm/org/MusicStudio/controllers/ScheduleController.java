@@ -84,15 +84,24 @@ public class ScheduleController {
         
         // Setup table columns
         timeColumn.setCellValueFactory(cellData -> 
-            new SimpleObjectProperty<>(cellData.getValue().getStartTime().atDate(cellData.getValue().getDate())));
+            new SimpleObjectProperty<>(cellData.getValue().getStartTime()));
         courseColumn.setCellValueFactory(cellData -> cellData.getValue().courseProperty());
         teacherColumn.setCellValueFactory(cellData -> cellData.getValue().teacherProperty());
         roomColumn.setCellValueFactory(cellData -> cellData.getValue().roomProperty());
         statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
         
         // Add listeners for date and view type changes
-        scheduleDatePicker.setOnAction(e -> loadSchedule());
-        scheduleViewType.setOnAction(e -> loadSchedule());
+        scheduleDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                loadSchedules();
+            }
+        });
+        
+        scheduleViewType.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                loadSchedules();
+            }
+        });
         
         // Initially hide admin controls
         adminControls.setVisible(false);
@@ -110,11 +119,14 @@ public class ScheduleController {
             scheduleTable.getSelectionModel().selectedItemProperty().isNull());
             
         System.out.println("Debug: ScheduleController initialization complete");
+        
+        // Load initial schedules
+        loadSchedules();
     }
 
     public void setScheduleService(ScheduleService scheduleService) {
         this.scheduleService = scheduleService;
-        loadSchedule(); // Load schedule after service is set
+        loadSchedules(); // Load schedule after service is set
     }
 
     public void setCurrentUser(User user) {
@@ -123,7 +135,7 @@ public class ScheduleController {
         boolean isAdmin = user != null && user.getRole() == Role.ADMIN;
         adminControls.setVisible(isAdmin);
         adminControls.setManaged(isAdmin);
-        loadSchedule();
+        loadSchedules();
     }
 
     public void setCourseService(CourseService courseService) {
@@ -134,37 +146,30 @@ public class ScheduleController {
         this.roomService = roomService;
     }
 
-    private void loadSchedule() {
-        if (scheduleTable == null || scheduleService == null || currentUser == null) {
-            System.out.println("Debug: Dependencies not initialized:");
-            System.out.println("- scheduleTable: " + (scheduleTable == null ? "null" : "ok"));
-            System.out.println("- scheduleService: " + (scheduleService == null ? "null" : "ok"));
-            System.out.println("- currentUser: " + (currentUser == null ? "null" : "ok"));
-            return;
-        }
-
+    @FXML
+    private void loadSchedules() {
         try {
-            List<Schedule> schedules;
             LocalDate selectedDate = scheduleDatePicker.getValue();
+            if (selectedDate == null) return;
+
             String viewType = scheduleViewType.getValue();
-            
             System.out.println("Debug: Loading schedules for date: " + selectedDate);
             System.out.println("Debug: View type: " + viewType);
-            System.out.println("Debug: User role: " + currentUser.getRole());
-            
-            if (currentUser.getRole() == Role.ADMIN) {
-                schedules = scheduleService.getAllSchedules();
+
+            List<Schedule> schedules;
+            if (currentUser != null && currentUser.getRole() == Role.TEACHER) {
+                // Pour les enseignants, ne charger que leurs cours
+                schedules = scheduleService.getTeacherSchedules(currentUser.getId(), selectedDate);
             } else {
+                // Pour les autres rôles, charger tous les horaires
                 schedules = scheduleService.getSchedule(selectedDate, viewType);
             }
 
-            System.out.println("Debug: Loaded " + schedules.size() + " schedules");
             scheduleTable.setItems(FXCollections.observableArrayList(schedules));
-            
+
         } catch (Exception e) {
-            System.err.println("Debug: Error loading schedules: " + e.getMessage());
             e.printStackTrace();
-            showError("Error", "Failed to load schedule: " + e.getMessage());
+            showError("Error", "Failed to load schedules: " + e.getMessage());
         }
     }
 
@@ -271,7 +276,10 @@ public class ScheduleController {
                             throw new IllegalArgumentException("End time cannot be before start time");
                         }
                         
-                        newSchedule.setTimeRange(startTime, endTime);
+                        LocalDateTime startDateTime = LocalDateTime.of(datePicker.getValue(), startTime);
+                        LocalDateTime endDateTime = LocalDateTime.of(datePicker.getValue(), endTime);
+                        
+                        newSchedule.setTimeRange(startDateTime, endDateTime);
                         newSchedule.setStatus("ACTIVE");
                         newSchedule.setDayOfWeek(datePicker.getValue().getDayOfWeek().toString());
                         
@@ -294,7 +302,7 @@ public class ScheduleController {
                 } else {
                     scheduleService.updateSchedule(result);
                 }
-                loadSchedule();
+                loadSchedules();
             });
 
         } catch (Exception e) {
@@ -322,7 +330,7 @@ public class ScheduleController {
                     try {
                         selected.setStatus("CANCELLED");
                         scheduleService.updateSchedule(selected);
-                        loadSchedule();
+                        loadSchedules();
                     } catch (Exception e) {
                         showError("Error", "Failed to delete schedule: " + e.getMessage());
                     }

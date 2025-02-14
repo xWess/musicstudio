@@ -26,18 +26,14 @@ public class DatabaseConnection {
                 props.getProperty("db.user"),
                 props.getProperty("db.password")
             );
-        } catch (ClassNotFoundException | SQLException | IOException e) {
-            throw new RuntimeException("Error connecting to the database", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize database connection", e);
         }
     }
     
     public static DatabaseConnection getInstance() {
         if (instance == null) {
-            synchronized (DatabaseConnection.class) {
-                if (instance == null) {
-                    instance = new DatabaseConnection();
-                }
-            }
+            instance = new DatabaseConnection();
         }
         return instance;
     }

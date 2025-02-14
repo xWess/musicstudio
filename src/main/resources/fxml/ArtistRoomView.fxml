@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="asm.org.MusicStudio.controllers.ArtistRoomViewController"
+      spacing="10" styleClass="content-container">
+    
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+    
+    <HBox styleClass="page-header">
+        <Text styleClass="page-title" text="Practice Rooms"/>
+    </HBox>
+    
+    <HBox styleClass="action-bar" spacing="10">
+        <DatePicker fx:id="artistRoomDatePicker"/>
+        <Button text="Book Room" onAction="#handleBookRoom" 
+                styleClass="action-button primary-button"/>
+    </HBox>
+    
+    <TableView fx:id="artistRoomsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="roomNumberColumn" text="Room" prefWidth="100"/>
+            <TableColumn fx:id="roomTypeColumn" text="Type" prefWidth="150"/>
+            <TableColumn fx:id="capacityColumn" text="Capacity" prefWidth="100"/>
+            <TableColumn fx:id="availabilityColumn" text="Availability" prefWidth="150"/>
+            <TableColumn fx:id="bookedByColumn" text="Booked By" prefWidth="150"/>
+            <TableColumn fx:id="timeColumn" text="Time" prefWidth="150"/>
+        </columns>
+    </TableView>
+</VBox> 

@@ -1,29 +1,6 @@
 package asm.org.MusicStudio.controllers;
 
 // Entity imports
-import asm.org.MusicStudio.entity.*;
-import asm.org.MusicStudio.entity.Course;
-
-// Service imports
-import asm.org.MusicStudio.services.UserService;
-import asm.org.MusicStudio.services.UserServiceImpl;
-import asm.org.MusicStudio.services.PaymentService;
-import asm.org.MusicStudio.services.ScheduleService;
-
-// JavaFX imports
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Stage;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.geometry.Insets;
-
-// Java utility imports
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -31,14 +8,47 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
+
+import asm.org.MusicStudio.entity.Artist;
+import asm.org.MusicStudio.entity.Course;
+import asm.org.MusicStudio.entity.Payment;
+import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.Student;
+import asm.org.MusicStudio.entity.Teacher;
+import asm.org.MusicStudio.entity.User;
+import asm.org.MusicStudio.services.CourseService;
+import asm.org.MusicStudio.services.PaymentService;
+import asm.org.MusicStudio.services.RoomService;
+import asm.org.MusicStudio.services.ScheduleService;
+import asm.org.MusicStudio.services.UserService;
+import asm.org.MusicStudio.services.UserServiceImpl;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import asm.org.MusicStudio.services.ScheduleService;
-import asm.org.MusicStudio.entity.Schedule;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
-import asm.org.MusicStudio.services.CourseService;
-import asm.org.MusicStudio.services.RoomService;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class MainController {
     @FXML
@@ -137,6 +147,24 @@ public class MainController {
     private Button coursesButton;  // Add this if you have a courses navigation button
 
     @FXML
+    private Button artistRoomsButton;
+
+    @FXML
+    private VBox artistRoomsContent;
+
+    @FXML
+    private VBox filesContent;
+
+    @FXML
+    private Button filesButton;
+
+    @FXML
+    private Tab filesTab;
+
+    @FXML
+    private Button studentsButton;
+
+    @FXML
     public void initialize() {
         try {
             // Initialize services
@@ -159,6 +187,27 @@ public class MainController {
             
             // Initialize table columns only if they exist
             initializeTables();
+            
+            // Hide artist rooms button initially
+            if (artistRoomsButton != null) {
+                artistRoomsButton.setVisible(false);
+                artistRoomsButton.setManaged(false);
+            }
+            
+            // Gérer la visibilité des onglets en fonction du rôle
+            if (currentUser != null) {
+                switch (currentUser.getRole()) {
+                    case STUDENT:
+                        filesTab.setDisable(false);
+                        break;
+                    case TEACHER:
+                        filesTab.setDisable(false);
+                        break;
+                    default:
+                        filesTab.setDisable(true);
+                        break;
+                }
+            }
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -243,6 +292,9 @@ public class MainController {
         // Add courses button
         if (coursesButton != null) {
             coursesButton.getStyleClass().remove("selected");
+        }
+        if (filesButton != null) {
+            filesButton.getStyleClass().remove("selected");
         }
     }
 
@@ -402,6 +454,10 @@ public class MainController {
         if (enrollmentsButton != null) enrollmentsButton.getStyleClass().remove("selected");
         if (roomsButton != null) roomsButton.getStyleClass().remove("selected");
         if (profileButton != null) profileButton.getStyleClass().remove("selected");
+        if (coursesButton != null) coursesButton.getStyleClass().remove("selected");
+        if (artistRoomsButton != null) artistRoomsButton.getStyleClass().remove("selected");
+        if (filesButton != null) filesButton.getStyleClass().remove("selected");
+        if (studentsButton != null) studentsButton.getStyleClass().remove("selected");
         
         // Add selected class to the clicked button if it exists
         if (selectedButton != null) {
@@ -451,36 +507,26 @@ public class MainController {
     }
 
     private void hideAllContent() {
-        // Hide all content containers
-        if (usersContent != null) {
-            usersContent.setVisible(false);
-            usersContent.setManaged(false);
-        }
-        if (paymentsContent != null) {
-            paymentsContent.setVisible(false);
-            paymentsContent.setManaged(false);
-        }
-        if (scheduleContent != null) {
-            scheduleContent.setVisible(false);
-            scheduleContent.setManaged(false);
-        }
-        if (enrollmentsContent != null) {
-            enrollmentsContent.setVisible(false);
-            enrollmentsContent.setManaged(false);
-        }
-        if (roomsContent != null) {
-            roomsContent.setVisible(false);
-            roomsContent.setManaged(false);
-        }
-        if (profileContent != null) {
-            profileContent.setVisible(false);
-            profileContent.setManaged(false);
-        }
-        // Add new content container
-        if (coursesContent != null) {
-            coursesContent.setVisible(false);
-            coursesContent.setManaged(false);
-        }
+        if (usersContent != null) usersContent.setVisible(false);
+        if (scheduleContent != null) scheduleContent.setVisible(false);
+        if (enrollmentsContent != null) enrollmentsContent.setVisible(false);
+        if (roomsContent != null) roomsContent.setVisible(false);
+        if (profileContent != null) profileContent.setVisible(false);
+        if (coursesContent != null) coursesContent.setVisible(false);
+        if (paymentsContent != null) paymentsContent.setVisible(false);
+        if (artistRoomsContent != null) artistRoomsContent.setVisible(false);
+        if (filesContent != null) filesContent.setVisible(false);
+        
+        // Gérer aussi le managed property
+        if (usersContent != null) usersContent.setManaged(false);
+        if (scheduleContent != null) scheduleContent.setManaged(false);
+        if (enrollmentsContent != null) enrollmentsContent.setManaged(false);
+        if (roomsContent != null) roomsContent.setManaged(false);
+        if (profileContent != null) profileContent.setManaged(false);
+        if (coursesContent != null) coursesContent.setManaged(false);
+        if (paymentsContent != null) paymentsContent.setManaged(false);
+        if (artistRoomsContent != null) artistRoomsContent.setManaged(false);
+        if (filesContent != null) filesContent.setManaged(false);
 
         // Clear any selections
         if (userTable != null)
@@ -787,44 +833,26 @@ public class MainController {
         alert.showAndWait();
     }
 
+    @FXML
     public void setCurrentUser(User user) {
-        System.out.println("Setting current user in MainController: " + 
-            (user != null ? user.getName() : "null"));
         this.currentUser = user;
         
-        // Configure UI based on user role
-        if (coursesButton != null) {
-            // Allow both teachers and admins to manage courses
-            boolean canManageCourses = user.getRole() == Role.TEACHER || 
-                                     user.getRole() == Role.ADMIN;
-            coursesButton.setVisible(canManageCourses);
-            coursesButton.setManaged(canManageCourses);
-        }
-        
-        if (user.getRole() != Role.ADMIN) {
-            // Hide users view for non-admins
-            if (usersButton != null) {
-                usersButton.setVisible(false);
-                usersButton.setManaged(false);
-            }
-            // Show appropriate default view
-            if (user.getRole() == Role.TEACHER) {
-                showCourses(); // Show courses view for teachers
+        // Show/hide buttons based on role
+        if (artistRoomsButton != null && roomsButton != null) {
+            boolean isArtist = user != null && user.getRole() == Role.ARTIST;
+            
+            // For artists, show only the booking button
+            artistRoomsButton.setVisible(isArtist);
+            artistRoomsButton.setManaged(isArtist);
+            roomsButton.setVisible(!isArtist);
+            roomsButton.setManaged(!isArtist);
+            
+            // Show appropriate view
+            if (isArtist) {
+                showArtistRoomsView();
             } else {
-                showSchedule(); // Show schedule for other roles
+                showSchedule();
             }
-        } else {
-            // Show users view for admin
-            if (usersButton != null) {
-                usersButton.setVisible(true);
-                usersButton.setManaged(true);
-            }
-            showUsers();
-        }
-        
-        // Update status label
-        if (statusLabel != null) {
-            statusLabel.setText("Welcome, " + user.getName());
         }
     }
 
@@ -833,21 +861,62 @@ public class MainController {
 
         boolean isAdmin = currentUser.getRole() == Role.ADMIN;
         boolean isTeacher = currentUser.getRole() == Role.TEACHER;
+        boolean isStudent = currentUser.getRole() == Role.STUDENT;
         
         // Configure UI elements based on role
         if (usersButton != null) {
             usersButton.setVisible(isAdmin);
             usersButton.setManaged(isAdmin);
         }
+        if (paymentsButton != null) {
+            paymentsButton.setVisible(isAdmin);
+            paymentsButton.setManaged(isAdmin);
+        }
+        if (scheduleButton != null) {
+            scheduleButton.setVisible(isAdmin || isTeacher);
+            scheduleButton.setManaged(isAdmin || isTeacher);
+        }
+        if (settingsButton != null) {
+            settingsButton.setVisible(isAdmin);
+            settingsButton.setManaged(isAdmin);
+        }
+        if (enrollmentsButton != null) {
+            enrollmentsButton.setVisible(isAdmin || isStudent);
+            enrollmentsButton.setManaged(isAdmin || isStudent);
+        }
+        if (roomsButton != null) {
+            roomsButton.setVisible(isAdmin || !isTeacher);
+            roomsButton.setManaged(isAdmin || !isTeacher);
+        }
+        if (profileButton != null) {
+            profileButton.setVisible(isAdmin);
+            profileButton.setManaged(isAdmin);
+        }
+        if (coursesButton != null) {
+            coursesButton.setVisible(isAdmin);
+            coursesButton.setManaged(isAdmin);
+        }
+        if (artistRoomsButton != null) {
+            artistRoomsButton.setVisible(isAdmin || isTeacher);
+            artistRoomsButton.setManaged(isAdmin || isTeacher);
+        }
+        if (filesButton != null) {
+            filesButton.setVisible(isTeacher || isStudent);
+            filesButton.setManaged(isTeacher || isStudent);
+        }
+        if (studentsButton != null) {
+            studentsButton.setVisible(isTeacher);
+            studentsButton.setManaged(isTeacher);
+            studentsButton.setDisable(!isTeacher);
+        }
 
         // Show appropriate default view based on role
-        if (isAdmin) {
+        if (isStudent) {
+            showEnrollments();
+        } else if (isAdmin) {
             showUsers();
         } else if (isTeacher) {
             showCourses();
-        } else {
-            showEnrollments();
-            showSchedule();
         }
     }
 
@@ -878,6 +947,11 @@ public class MainController {
             // Update status label if it exists
             if (statusLabel != null) {
                 statusLabel.setText("Welcome, " + currentUser.getName());
+            }
+            
+            if (currentUser != null && currentUser.getRole() == Role.TEACHER) {
+                filesButton.setVisible(true);
+                filesButton.setManaged(true);
             }
             
         } catch (Exception e) {
@@ -1123,6 +1197,94 @@ public class MainController {
         } catch (Exception e) {
             e.printStackTrace();
             showError("Error", "Failed to load courses view: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    public void showArtistRoomsView() {
+        try {
+            if (currentUser == null || currentUser.getRole() != Role.ARTIST) {
+                showError("Access Denied", "Only artists can access room bookings.");
+                return;
+            }
+
+            hideAllContent();
+            if (artistRoomsContent != null) {
+                artistRoomsContent.setVisible(true);
+                artistRoomsContent.setManaged(true);
+            }
+            updateNavButtonStates(artistRoomsButton);
+            statusLabel.setText("Artist rooms view loaded");
+        } catch (Exception e) {
+            showError("Error", "Failed to load artist rooms view: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void showFiles() {
+        try {
+            if (currentUser == null) {
+                showError("Access Denied", "Please log in to view files.");
+                return;
+            }
+
+            hideAllContent();
+            
+            // Charger la vue appropriée selon le rôle
+            String viewPath = currentUser.getRole() == Role.TEACHER ? 
+                            "/fxml/FileView.fxml" : 
+                            "/fxml/StudentFileView.fxml";
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(viewPath));
+            Node fileView = loader.load();
+            
+            // Si c'est un enseignant, configurer le contrôleur
+            if (currentUser.getRole() == Role.TEACHER) {
+                FileViewController controller = loader.getController();
+                controller.setCurrentUser(currentUser);
+            } else if (currentUser.getRole() == Role.STUDENT) {
+                StudentFileViewController controller = loader.getController();
+                // Pas besoin de setCurrentUser car il utilise UserService.getCurrentUser()
+            }
+            
+            // Vider et ajouter la nouvelle vue
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(fileView);
+            
+            updateNavButtonStates(filesButton);
+            statusLabel.setText("Files view loaded");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load files view: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void showStudents() {
+        try {
+            if (currentUser == null || currentUser.getRole() != Role.TEACHER) {
+                showError("Access Denied", "Only teachers can view their students.");
+                return;
+            }
+
+            hideAllContent();
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TeacherStudentView.fxml"));
+            Node studentView = loader.load();
+            
+            TeacherStudentViewController controller = loader.getController();
+            controller.setCurrentTeacher(currentUser);
+            
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(studentView);
+            
+            updateNavButtonStates(studentsButton);
+            statusLabel.setText("Students view loaded");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Error", "Failed to load students view: " + e.getMessage());
         }
     }
 }

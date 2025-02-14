@@ -88,6 +88,24 @@
                         <FontIcon iconLiteral="fas-cog"/>
                     </graphic>
                 </Button>
+                <Button fx:id="artistRoomsButton" text="Room Booking" 
+                        onAction="#showArtistRoomsView" 
+                        styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-door-open" iconSize="16"/>
+                    </graphic>
+                </Button>
+                <Button fx:id="filesButton" text="Files" onAction="#showFiles" styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-file"/>
+                    </graphic>
+                </Button>
+                <Button fx:id="studentsButton" text="Students" onAction="#showStudents" 
+                        styleClass="nav-button">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-users"/>
+                    </graphic>
+                </Button>
             </VBox>
         </VBox>
     </left>
@@ -214,6 +232,19 @@
                         <TableColumn fx:id="paymentStatusColumn" text="Status" prefWidth="100"/>
                     </columns>
                 </TableView>
+            </VBox>
+
+            <!-- Artist Rooms Content -->
+            <VBox fx:id="artistRoomsContent" styleClass="content-container" visible="false">
+                <fx:include fx:id="artistRoomsView" source="ArtistRoomView.fxml"/>
+            </VBox>
+
+            <!-- Files Content -->
+            <VBox fx:id="filesContent" styleClass="content-container" visible="false">
+                <HBox styleClass="page-header">
+                    <Text styleClass="page-title" text="Course Files"/>
+                </HBox>
+                <fx:include source="StudentFileView.fxml"/>
             </VBox>
         </StackPane>
     </center>

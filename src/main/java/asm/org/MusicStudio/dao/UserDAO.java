@@ -8,10 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAO {
+    private final DatabaseConnection dbConnection;
+
+    public UserDAO() {
+        this.dbConnection = DatabaseConnection.getInstance();
+    }
+
     public void createUser(User user) throws SQLException {
         String sql = "INSERT INTO users (name, email, role, password, active) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, user.getName());
@@ -32,16 +38,15 @@ public class UserDAO {
 
     public User findByEmail(String email) throws SQLException {
         String sql = "SELECT * FROM users WHERE email = ?";
-
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, email);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return createUserFromResultSet(rs);
-                }
+        
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return createUserFromResultSet(rs);
             }
         }
         return null;
@@ -51,7 +56,7 @@ public class UserDAO {
         String sql = "UPDATE users SET name = ?, email = ?, password = ?, role = ?, active = ?, " +
                     "last_login = ? WHERE id = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, user.getName());
@@ -75,7 +80,7 @@ public class UserDAO {
     public void deleteUser(int userId) throws SQLException {
         String sql = "DELETE FROM users WHERE id = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setInt(1, userId);
@@ -87,7 +92,7 @@ public class UserDAO {
         String sql = "SELECT * FROM users";
         List<User> users = new ArrayList<>();
 
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -121,7 +126,7 @@ public class UserDAO {
     public User findByResetToken(String resetToken) throws SQLException {
         String sql = "SELECT * FROM users WHERE reset_token = ?";
 
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, resetToken);
@@ -138,7 +143,7 @@ public class UserDAO {
     public void saveUser(User user) throws SQLException {
         String sql = "INSERT INTO users (name, email, password, role, active) VALUES (?, ?, ?, ?, ?)";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, user.getName());
@@ -155,7 +160,7 @@ public class UserDAO {
         String sql = "SELECT * FROM users WHERE TRIM(BOTH '\"' FROM role) = ?";
         List<User> users = new ArrayList<>();
 
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, role.toString());
@@ -172,7 +177,7 @@ public class UserDAO {
     public User findById(Long userId) throws SQLException {
         String sql = "SELECT * FROM users WHERE id = ?";
 
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setLong(1, userId);

@@ -8,8 +8,8 @@ import java.time.LocalDate;
 public class Student_EnrollmentTest {
     public static void main(String[] args) {
         StudentService studentService = new StudentServiceImpl();
-        UserServiceImpl userService = new UserServiceImpl();
-        EnrollmentService enrollmentService = new EnrollmentServiceImpl();
+        UserServiceImpl userService = UserServiceImpl.getInstance();
+        EnrollmentService enrollmentService = EnrollmentServiceImpl.getInstance();
         PaymentService paymentService = new PaymentService();
         
         // Create and save test student

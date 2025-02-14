@@ -1,18 +1,41 @@
 package asm.org.MusicStudio.services;
 
-import asm.org.MusicStudio.entity.*;
-import asm.org.MusicStudio.dao.*;
-import java.time.LocalDate;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import asm.org.MusicStudio.dao.CourseDAO;
+import asm.org.MusicStudio.dao.EnrollmentDAO;
+import asm.org.MusicStudio.db.DatabaseConnection;
+import asm.org.MusicStudio.entity.Course;
+import asm.org.MusicStudio.entity.Enrollment;
+import asm.org.MusicStudio.entity.Payment;
+import asm.org.MusicStudio.entity.Role;
+import asm.org.MusicStudio.entity.Student;
 
 public class EnrollmentServiceImpl implements EnrollmentService {
+    private static EnrollmentServiceImpl instance;
     private final EnrollmentDAO enrollmentDAO;
     private final CourseDAO courseDAO;
     
-    public EnrollmentServiceImpl() {
+    private EnrollmentServiceImpl() {
         this.enrollmentDAO = new EnrollmentDAO();
         this.courseDAO = new CourseDAO();
+    }
+
+    public static EnrollmentServiceImpl getInstance() {
+        if (instance == null) {
+            synchronized (EnrollmentServiceImpl.class) {
+                if (instance == null) {
+                    instance = new EnrollmentServiceImpl();
+                }
+            }
+        }
+        return instance;
     }
     
     @Override
@@ -100,5 +123,48 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         } catch (SQLException e) {
             throw new RuntimeException("Error creating enrollment", e);
         }
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByTeacher(int teacherId) throws SQLException {
+        String sql = """
+            SELECT e.*, c.*, s.* 
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.id
+            JOIN users s ON e.student_id = s.id
+            WHERE c.teacher_id = ?
+            """;
+            
+        List<Enrollment> enrollments = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, teacherId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Student student = new Student();
+                student.setId(rs.getInt("student_id"));
+                student.setName(rs.getString("name"));
+                student.setEmail(rs.getString("email"));
+                student.setRole(Role.STUDENT);
+                
+                Course course = Course.builder()
+                    .id(rs.getInt("course_id"))
+                    .name(rs.getString("name"))
+                    .build();
+                    
+                Enrollment enrollment = Enrollment.builder()
+                    .id(rs.getInt("id"))
+                    .student(student)
+                    .course(course)
+                    .startDate(rs.getDate("start_date").toLocalDate())
+                    .status(rs.getString("status"))
+                    .build();
+                    
+                enrollments.add(enrollment);
+            }
+        }
+        return enrollments;
     }
 } 

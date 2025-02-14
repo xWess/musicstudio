@@ -1,36 +1,42 @@
 package asm.org.MusicStudio.entity;
 
-import javafx.beans.property.*;
 import java.time.LocalDateTime;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import lombok.Data;
 
 @Data
-public class User {
-    public User() {
-        this.idProperty.set(0);
-        this.nameProperty.set("");
-        this.emailProperty.set("");
-        this.roleProperty.set(Role.STUDENT);
-        this.passwordProperty.set("");
-        this.saltProperty.set("");
-        this.activeProperty.set(true);
-        this.lastLoginProperty.set(LocalDateTime.now());
-        this.resetToken.set("");
-        this.resetTokenExpiry.set(null);
+public abstract class User {
+    protected User() {
+        this.idProperty = new SimpleIntegerProperty();
+        this.nameProperty = new SimpleStringProperty();
+        this.emailProperty = new SimpleStringProperty();
+        this.roleProperty = new SimpleObjectProperty<>();
+        this.passwordProperty = new SimpleStringProperty();
+        this.saltProperty = new SimpleStringProperty();
+        this.activeProperty = new SimpleBooleanProperty();
+        this.lastLoginProperty = new SimpleObjectProperty<>();
+        this.resetToken = new SimpleStringProperty();
+        this.resetTokenExpiry = new SimpleObjectProperty<>();
     }
 
-    private final IntegerProperty idProperty = new SimpleIntegerProperty();
-    private final StringProperty nameProperty = new SimpleStringProperty();
-    private final StringProperty emailProperty = new SimpleStringProperty();
-    private final ObjectProperty<Role> roleProperty = new SimpleObjectProperty<>();
-    private final StringProperty passwordProperty = new SimpleStringProperty();
-    private final StringProperty saltProperty = new SimpleStringProperty();
-    private final BooleanProperty activeProperty = new SimpleBooleanProperty(true);
-    private final ObjectProperty<LocalDateTime> lastLoginProperty = 
-        new SimpleObjectProperty<>();
-    private final StringProperty resetToken = new SimpleStringProperty();
-    private final ObjectProperty<LocalDateTime> resetTokenExpiry = 
-        new SimpleObjectProperty<>();
+    private final IntegerProperty idProperty;
+    private final StringProperty nameProperty;
+    private final StringProperty emailProperty;
+    private final ObjectProperty<Role> roleProperty;
+    private final StringProperty passwordProperty;
+    private final StringProperty saltProperty;
+    private final BooleanProperty activeProperty;
+    private final ObjectProperty<LocalDateTime> lastLoginProperty;
+    private final StringProperty resetToken;
+    private final ObjectProperty<LocalDateTime> resetTokenExpiry;
 
     // Property getters
     public IntegerProperty idProperty() { return idProperty; }
@@ -94,5 +100,18 @@ public class User {
     public LocalDateTime getResetTokenExpiry() { return resetTokenExpiry.get(); }
     public void setResetTokenExpiry(LocalDateTime expiry) { 
         this.resetTokenExpiry.set(expiry); 
+    }
+
+    // Factory method for basic user creation
+    protected static <T extends User> T createBasicUser(int id, String name, String email, Class<T> userClass) {
+        try {
+            T user = userClass.getDeclaredConstructor().newInstance();
+            user.setId(id);
+            user.setName(name);
+            user.setEmail(email);
+            return user;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create user", e);
+        }
     }
 } 

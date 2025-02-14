@@ -15,11 +15,27 @@ import java.util.ArrayList;
 public interface RoomService {
     
     /**
-     * Gets available rooms for a specific date
+     * Gets available rooms for a specific date and time
+     * @param date The date to check
+     * @param time The time to check
+     * @return List of available rooms
+     */
+    List<Room> getAvailableRooms(LocalDate date, LocalTime time) throws SQLException;
+    
+    /**
+     * Gets available rooms for a specific date (at any time)
      * @param date The date to check
      * @return List of available rooms
      */
-    List<Room> getAvailableRooms(LocalDate date) throws SQLException;
+    default List<Room> getAvailableRooms(LocalDate date) throws SQLException {
+        return getAvailableRooms(date, LocalTime.of(9, 0)); // Default to 9 AM
+    }
+    
+    /**
+     * Gets all rooms regardless of availability
+     * @return List of all rooms
+     */
+    List<Room> getAllRooms() throws SQLException;
     
     /**
      * Books a room for an artist
@@ -46,8 +62,6 @@ public interface RoomService {
      * @return Room details
      */
     Room getRoomDetails(Long roomId);
-
-    List<Room> getAllRooms() throws SQLException;
 
     static RoomService getInstance() {
         return RoomServiceImpl.getInstance();

@@ -1,61 +1,76 @@
 package asm.org.MusicStudio.dao;
 
-import asm.org.MusicStudio.db.DatabaseConnection;
-import asm.org.MusicStudio.entity.Payment;
-import asm.org.MusicStudio.entity.User;
-import asm.org.MusicStudio.entity.Student;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDateTime;
-import java.time.LocalDate;
+
+import asm.org.MusicStudio.db.DatabaseConnection;
+import asm.org.MusicStudio.entity.Payment;
 
 public class PaymentDAO {
     
-    public List<Payment> findByUser(User user) throws SQLException {
-        String sql = "SELECT id, description, amount, payment_date, status " +
-                    "FROM payments WHERE user_id = ?";
-                    
+    public List<Payment> findByUserId(int userId) throws SQLException {
         List<Payment> payments = new ArrayList<>();
+        String sql = """
+            SELECT p.*, c.name as course_name 
+            FROM payments p
+            LEFT JOIN courses c ON p.course_id = c.id
+            WHERE p.user_id = ?
+            ORDER BY p.payment_date DESC
+            """;
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setInt(1, user.getId());
+            pstmt.setInt(1, userId);
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    Payment payment = Payment.builder()
-                        .id(rs.getLong("id"))
-                        .user(user)
-                        .description(rs.getString("description"))
-                        .amount(rs.getBigDecimal("amount"))
-                        .paymentDate(rs.getTimestamp("payment_date").toLocalDateTime())
-                        .status(rs.getString("status"))
-                        .build();
-                    payments.add(payment);
+                    payments.add(buildPaymentFromResultSet(rs));
                 }
             }
-        } catch (SQLException e) {
-            throw new SQLException("Error fetching payments for user: " + e.getMessage(), e);
         }
-        
         return payments;
     }
     
     public Payment save(Payment payment) throws SQLException {
-        String sql = "INSERT INTO payments (user_id, amount, payment_date, status, description) " +
-                    "VALUES (?, ?, ?, ?, ?) RETURNING id";
-        
+        String sql = """
+            INSERT INTO payments (user_id, description, amount, payment_date, status, 
+                                payment_method, course_id, room_booking_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            RETURNING id
+            """;
+            
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setInt(1, payment.getUser().getId());
-            pstmt.setBigDecimal(2, payment.getAmount());
-            pstmt.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
-            pstmt.setString(4, "PENDING");
-            pstmt.setString(5, payment.getDescription());
+            pstmt.setInt(1, payment.getUserId());
+            pstmt.setString(2, payment.getDescription());
+            pstmt.setBigDecimal(3, payment.getAmount());
+            pstmt.setTimestamp(4, Timestamp.valueOf(payment.getPaymentDate()));
+            pstmt.setString(5, payment.getStatus());
+            pstmt.setString(6, payment.getPaymentMethod());
+            
+            // Handle nullable course_id
+            if (payment.getCourseId() != null) {
+                pstmt.setInt(7, payment.getCourseId());
+            } else {
+                pstmt.setNull(7, Types.INTEGER);
+            }
+            
+            // Handle nullable room_booking_id
+            if (payment.getRoomBookingId() != null) {
+                pstmt.setInt(8, payment.getRoomBookingId());
+            } else {
+                pstmt.setNull(8, Types.INTEGER);
+            }
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -68,10 +83,12 @@ public class PaymentDAO {
     }
 
     public Payment findById(long paymentId) throws SQLException {
-        String sql = "SELECT p.*, u.name as user_name, u.email as user_email " +
-                    "FROM payments p " +
-                    "JOIN users u ON p.user_id = u.id " +
-                    "WHERE p.id = ?";
+        String sql = """
+            SELECT p.*, c.name as course_name 
+            FROM payments p
+            LEFT JOIN courses c ON p.course_id = c.id
+            WHERE p.id = ?
+            """;
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -80,62 +97,11 @@ public class PaymentDAO {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    User user = new Student(
-                        rs.getInt("user_id"),
-                        rs.getString("user_name"),
-                        rs.getString("user_email")
-                    );
-                    
-                    return Payment.builder()
-                        .id(rs.getLong("id"))
-                        .user(user)
-                        .description(rs.getString("description"))
-                        .amount(rs.getBigDecimal("amount"))
-                        .paymentDate(rs.getTimestamp("payment_date").toLocalDateTime())
-                        .status(rs.getString("status"))
-                        .build();
+                    return buildPaymentFromResultSet(rs);
                 }
-                return null; // Payment not found
+                return null;
             }
         }
-    }
-
-    public List<Payment> findByUserId(int userId) throws SQLException {
-        List<Payment> payments = new ArrayList<>();
-        String sql = "SELECT p.*, u.name as user_name, u.email as user_email " +
-                    "FROM payments p " +
-                    "JOIN users u ON p.user_id = u.id " +
-                    "WHERE p.user_id = ? " +
-                    "ORDER BY p.payment_date DESC";
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, userId);
-            
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    User user = new Student(
-                        rs.getInt("user_id"),
-                        rs.getString("user_name"),
-                        rs.getString("user_email")
-                    );
-                    
-                    Payment payment = Payment.builder()
-                        .id(rs.getLong("id"))
-                        .user(user)
-                        .description(rs.getString("description"))
-                        .amount(rs.getBigDecimal("amount"))
-                        .paymentDate(rs.getTimestamp("payment_date").toLocalDateTime())
-                        .status(rs.getString("status"))
-                        .build();
-                    
-                    payments.add(payment);
-                }
-            }
-        }
-        
-        return payments;
     }
 
     public Payment update(Payment payment) throws SQLException {
@@ -156,6 +122,33 @@ public class PaymentDAO {
         }
     }
 
+    private Payment buildPaymentFromResultSet(ResultSet rs) throws SQLException {
+        return Payment.builder()
+            .id(rs.getLong("id"))
+            .userId(rs.getInt("user_id"))
+            .courseId(getIntOrNull(rs, "course_id"))
+            .amount(rs.getBigDecimal("amount"))
+            .paymentDate(rs.getTimestamp("payment_date").toLocalDateTime())
+            .status(rs.getString("status"))
+            .paymentMethod(rs.getString("payment_method"))
+            .roomBookingId(getIntOrNull(rs, "room_booking_id"))
+            .description(rs.getString("description"))
+            .build();
+    }
+
+    private void setNullableInt(PreparedStatement pstmt, int parameterIndex, Integer value) throws SQLException {
+        if (value != null) {
+            pstmt.setInt(parameterIndex, value);
+        } else {
+            pstmt.setNull(parameterIndex, java.sql.Types.INTEGER);
+        }
+    }
+
+    private Integer getIntOrNull(ResultSet rs, String columnName) throws SQLException {
+        int value = rs.getInt(columnName);
+        return rs.wasNull() ? null : value;
+    }
+
     public Payment processEnrollmentPayment(Payment payment, LocalDate startDate) throws SQLException {
         Connection conn = null;
         try {
@@ -163,30 +156,35 @@ public class PaymentDAO {
             conn.setAutoCommit(false);
             
             // First insert payment
-            String paymentSql = "INSERT INTO payments (amount, payment_date, status) VALUES (?, ?, ?) RETURNING id";
-            Long paymentId;
+            String paymentSql = """
+                INSERT INTO payments (user_id, amount, payment_date, status, description, course_id) 
+                VALUES (?, ?, ?, ?, ?, ?) 
+                RETURNING id
+                """;
             
             try (PreparedStatement pstmt = conn.prepareStatement(paymentSql)) {
-                pstmt.setDouble(1, payment.getAmount().doubleValue());
-                pstmt.setTimestamp(2, Timestamp.valueOf(payment.getPaymentDate()));
-                pstmt.setString(3, payment.getStatus());
+                pstmt.setInt(1, payment.getUserId());
+                pstmt.setBigDecimal(2, payment.getAmount());
+                pstmt.setTimestamp(3, Timestamp.valueOf(payment.getPaymentDate()));
+                pstmt.setString(4, payment.getStatus());
+                pstmt.setString(5, payment.getDescription());
+                pstmt.setInt(6, payment.getCourseId());
                 
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (!rs.next()) {
                         throw new SQLException("Failed to create payment record");
                     }
-                    paymentId = rs.getLong(1);
-                    payment.setId(paymentId);
+                    payment.setId(rs.getLong("id"));
                 }
             }
             
             // Then create enrollment
             String enrollSql = "INSERT INTO enrollments (student_id, course_id, payment_id, start_date) VALUES (?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(enrollSql)) {
-                pstmt.setInt(1, payment.getUser().getId());
+                pstmt.setInt(1, payment.getUserId());
                 pstmt.setInt(2, payment.getCourseId());
-                pstmt.setLong(3, paymentId);
-                pstmt.setTimestamp(4, Timestamp.valueOf(startDate.atStartOfDay()));
+                pstmt.setLong(3, payment.getId());
+                pstmt.setDate(4, java.sql.Date.valueOf(startDate));
                 
                 int rows = pstmt.executeUpdate();
                 if (rows != 1) {
@@ -214,7 +212,7 @@ public class PaymentDAO {
                     
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, payment.getUser().getId());
+            pstmt.setInt(1, payment.getUserId());
             pstmt.setString(2, payment.getDescription());
             pstmt.setBigDecimal(3, payment.getAmount());
             pstmt.setTimestamp(4, Timestamp.valueOf(startDate));
